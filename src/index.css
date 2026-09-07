@@ -1,0 +1,333 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Mukta:wght@300;400;500;600;700;800&family=Noto+Serif:wght@500;600;700&family=Tiro+Devanagari+Hindi&display=swap');
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--color-base-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@theme inline {
+  /* ── Government of India institutional palette (light) ───────────────── */
+  --color-base-bg: #e9edf2;          /* cool institutional page grey */
+  --color-surface: #fbfcfd;          /* near-white card */
+  --color-surface-2: #eef2f7;        /* table header / alternating rows */
+  --color-surface-hover: #e3e9f0;
+
+  --color-primary: #0b2e63;          /* deep government navy */
+  --color-primary-hover: #082049;
+  --color-accent: #12448f;           /* portal blue (links, emphasis) */
+
+  --color-text-primary: #14181f;
+  --color-text-secondary: #45505f;
+  --color-text-muted: #6b7684;
+
+  --color-border-subtle: #d3dae2;
+  --color-border-strong: #b3bdc9;
+
+  /* Alerts (deepened, non-neon) */
+  --color-alert-critical: #b3261e;
+  --color-alert-high: #b45309;
+  --color-alert-medium: #a16207;
+  --color-alert-low: #1a7a4c;
+  --color-success: #1a7a4c;
+
+  /* Tiranga */
+  --color-saffron: #FF9933;
+  --color-white-band: #ffffff;
+  --color-india-green: #138808;
+  --color-chakra-blue: #000080;
+}
+
+/* Type roles + entity colours (plain custom properties for var() + JS parity) */
+:root {
+  --font-sans: 'Mukta', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Tiro Devanagari Hindi', 'Noto Serif', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  /* Restrained entity palette — colour is SECONDARY encoding; the type
+     badge label (PER/ORG/TEL/…) carries identity. Kept in sync with theme.ts */
+  --entity-person: #12356b;
+  --entity-case: #0b2e63;
+  --entity-org: #b45309;
+  --entity-financial: #b45309;
+  --entity-phone: #1a6e6e;
+  --entity-account: #175e8a;
+  --entity-vehicle: #5b6472;
+  --entity-location: #1a7a4c;
+  --entity-event: #6b7280;
+}
+
+/* ── High-contrast mode (utility-bar toggle adds .hc to <html>) ─────────── */
+html.hc {
+  --color-base-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #ffffff;
+  --color-surface-hover: #e8e8e8;
+  --color-text-primary: #000000;
+  --color-text-secondary: #000000;
+  --color-text-muted: #1c1c1c;
+  --color-border-subtle: #000000;
+  --color-border-strong: #000000;
+  --color-primary: #00204a;
+  --color-primary-hover: #001229;
+  --color-accent: #00204a;
+}
+html.hc a { text-decoration: underline; }
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+/* Base element styles live in @layer base so Tailwind utilities (text-white,
+   font-mono, text-[...] etc.) reliably win. Unlayered rules beat layered
+   utilities in the cascade, which was silently forcing white headings on dark
+   panels back to the default ink colour. */
+@layer base {
+  h1, h2 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.005em;
+    color: var(--color-text-primary);
+  }
+  h1 { font-weight: 700; }
+  h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-text-primary);
+  }
+  body, p, span, div, li, td, th, label { font-family: var(--font-sans); }
+  input, textarea, select { font-family: var(--font-sans); }
+}
+.font-mono, .tabular { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.card-title { font-family: var(--font-sans); font-weight: 700; font-size: 1.0625rem; line-height: 1.3; }
+.card-subtitle { font-family: var(--font-sans); font-weight: 500; font-size: 0.875rem; }
+.card-description { font-family: var(--font-sans); font-weight: 400; line-height: 1.6; font-size: 0.9375rem; }
+.stat-number { font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.badge-text { font-family: var(--font-sans); font-weight: 600; font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.gov-section-title { font-family: var(--font-serif); font-size: 1.75rem; font-weight: 700; }
+.gov-section-subtitle { font-size: 1rem; color: var(--color-text-secondary); margin-top: 0.5rem; }
+
+/* ── Focus visibility (accessibility) ───────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-saffron);
+  outline-offset: 2px;
+}
+
+/* Skip-to-content link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+.skip-link:focus { left: 0.5rem; top: 0.5rem; }
+
+/* ── Button system (flat, functional, aligned) ──────────────────────────── */
+.btn-premium,
+.btn-premium-outline,
+.btn-ghost,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.6875rem 1.25rem;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.btn-premium { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.btn-premium:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+.btn-premium-outline { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+.btn-premium-outline:hover { background: var(--color-primary); color: #fff; }
+.btn-ghost { background: transparent; color: var(--color-text-secondary); border-color: transparent; }
+.btn-ghost:hover { background: var(--color-surface-hover); color: var(--color-text-primary); }
+.btn-danger { background: var(--color-alert-critical); color: #fff; border-color: var(--color-alert-critical); }
+.btn-danger:hover { background: #8f1e17; border-color: #8f1e17; }
+
+.btn-premium:active,
+.btn-premium-outline:active,
+.btn-ghost:active,
+.btn-danger:active { transform: translateY(1px); }
+
+.btn-premium:disabled,
+.btn-premium-outline:disabled,
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-premium:focus-visible,
+.btn-premium-outline:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible { outline: 2px solid var(--color-saffron); outline-offset: 2px; }
+
+.btn-sm { padding: 0.4375rem 0.875rem; font-size: 0.75rem; }
+.btn-lg { padding: 0.875rem 1.75rem; font-size: 0.875rem; }
+.btn-block { display: flex; width: 100%; }
+
+/* ── Panels (one flat bordered surface; legacy aliases retained) ─────────── */
+.gov-panel,
+.card-gov,
+.glass-panel,
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 2px;
+}
+
+/* Flag bands */
+.flag-saffron { background: var(--color-saffron); }
+.flag-white { background: #ffffff; }
+.flag-green { background: var(--color-india-green); }
+.tricolor-strip { display: flex; width: 100%; height: 4px; }
+.tricolor-strip > * { flex: 1 1 0; }
+
+/* Top-border accent (replaces the old left/underline accent bar) */
+.gov-accent-top { border-top: 3px solid var(--color-primary); }
+
+/* Filter chips + tabs (replace ad-hoc inline pills/tabs) */
+.gov-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 2px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.gov-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.gov-chip.is-active,
+.gov-chip[aria-pressed="true"] { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
+.gov-tab {
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.gov-tab:hover { color: var(--color-text-primary); }
+.gov-tab.is-active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+/* Nav active underline */
+.nav-active {
+  color: var(--color-primary) !important;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-surface-2); }
+::-webkit-scrollbar-thumb { background: var(--color-border-strong); border: 2px solid var(--color-surface-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ── Graph animations (calm; disabled under reduced-motion) ─────────────── */
+@keyframes dashFlow { to { stroke-dashoffset: -20; } }
+@keyframes nodePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+.dash-flow { animation: dashFlow 1.4s linear infinite; }
+.node-pulse { animation: nodePulse 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Timeline structural centre line */
+.timeline-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-border-strong);
+  transform: translateX(-50%);
+}
+
+/* Graph tooltip */
+.graph-tooltip {
+  position: absolute;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  pointer-events: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 2px;
+  white-space: nowrap;
+  z-index: 100;
+}
+
+/* ── Leaflet (light basemap) ────────────────────────────────────────────── */
+.leaflet-container {
+  z-index: 1;
+  background: var(--color-surface-2) !important;
+  font-family: var(--font-sans);
+}
+.cypher-map-tooltip {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  color: var(--color-text-primary) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  padding: 2px 7px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+/* Kill Leaflet's default drop shadows on all map chrome (no shadows house rule) */
+.leaflet-tooltip,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-bar,
+.leaflet-bar a { box-shadow: none !important; }
+/* Remove the default tooltip pointer triangle for a flat institutional label */
+.cypher-map-tooltip::before { display: none !important; }
+.leaflet-popup-content-wrapper {
+  background: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border-strong) !important;
+  border-radius: 2px !important;
+}
+.leaflet-popup-tip { background: var(--color-surface) !important; }
+/* Zoom control: flat, bordered, no shadow */
+.leaflet-bar { border: 1px solid var(--color-border-strong) !important; }
+.leaflet-bar a {
+  background: var(--color-surface) !important;
+  color: var(--color-text-primary) !important;
+  border-bottom: 1px solid var(--color-border-subtle) !important;
+}
+.leaflet-bar a:hover { background: var(--color-surface-hover) !important; }

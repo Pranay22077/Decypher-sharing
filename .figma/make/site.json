@@ -1,0 +1,10 @@
+{
+  "description": "Leverage AI to analyze criminal data, uncover hidden networks, and provide actionable insights for law enforcement, enhancing investigative efficiency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
