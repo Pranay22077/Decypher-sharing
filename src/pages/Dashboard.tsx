@@ -46,20 +46,20 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
     : activeCases;
 
   const recentActivity = [
-    { time: "14:32", text: "New alert: communication burst detected on PERSON-A", type: "alert" },
-    { time: "13:15", text: "Evidence processed: CCTV footage EVD-005", type: "evidence" },
+    { time: "14:32", text: "New alert: communication burst detected on PERSON-P001", type: "alert" },
+    { time: "13:15", text: "Evidence processed: CCTV footage EV-2026-0005", type: "evidence" },
     { time: "11:47", text: "CDR records updated: 3 new entries in CASE-2026-017", type: "update" },
     { time: "09:20", text: "Alert resolved: vehicle sighting verified for VEH-RJ14", type: "resolved" },
-    { time: "Yesterday", text: "PERSON-F identified as cross-case bridge entity", type: "alert" },
+    { time: "Yesterday", text: "PERSON-P006 identified as cross-case bridge entity", type: "alert" },
     { time: "Yesterday", text: "Intelligence report processed for ORG-042 activity", type: "evidence" },
   ];
 
   const queue = [
-    { id: "Q1", action: "Review communication burst on PERSON-A", case: "CASE-2026-017", priority: "critical" },
+    { id: "Q1", action: "Review communication burst on PERSON-P001", case: "CASE-2026-017", priority: "critical" },
     { id: "Q2", action: "Verify vehicle occupant in VEH-DL01 CCTV sighting", case: "CASE-2026-017", priority: "high" },
     { id: "Q3", action: "Investigate ACCT-X3 unknown beneficiary", case: "CASE-2026-017", priority: "high" },
-    { id: "Q4", action: "Confirm PERSON-F identity in CASE-2026-031", case: "CASE-2026-031", priority: "medium" },
-    { id: "Q5", action: "Review location contradiction for PERSON-D (Jan 22)", case: "CASE-2026-017", priority: "medium" },
+    { id: "Q4", action: "Confirm PERSON-P006 identity in CASE-2026-031", case: "CASE-2026-031", priority: "medium" },
+    { id: "Q5", action: "Review location contradiction for PERSON-P004 (Jan 22)", case: "CASE-2026-017", priority: "medium" },
   ];
 
   const statCards = [

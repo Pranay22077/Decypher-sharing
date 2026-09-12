@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Filter, ChevronRight, MapPin, FileText, Phone, TrendingUp, Users, AlertTriangle, Eye, Shield } from "../components/icons";
-import { timelineEvents } from "../data/dummy";
+import { timelineEvents, TimelineEvent } from "../data/dummy";
+import { api, appMode } from "../lib/api";
+import { useLocale } from "../context/LocaleContext";
 
 interface Props {
   onNavigate: (page: string, param?: string) => void;
@@ -24,11 +27,15 @@ function confStyle(c: string): React.CSSProperties {
 }
 
 export default function TimelinePage({ onNavigate }: Props) {
-  const [filterType, setFilterType] = useState("all");
-  const [filterConf, setFilterConf] = useState("all");
+  const { locale } = useLocale(); const [params,setParams] = useSearchParams();
+  const filterType = params.get("type") || "all"; const filterConf = params.get("confidence") || "all";
+  const setFilterType = (value:string) => setParams(p => {p.set("type",value);return p;});
+  const setFilterConf = (value:string) => setParams(p => {p.set("confidence",value);return p;});
+  const [events,setEvents] = useState<TimelineEvent[]>(timelineEvents); const [error,setError] = useState("");
+  useEffect(() => { if(appMode !== "full") return; api.timeline("CASE-2026-017").then(rows => setEvents(rows.map(row => ({id:row.id,timestamp:row.timestamp.replace("T"," ").slice(0,16),type:row.type.toLowerCase() as TimelineEvent["type"],title:locale === "hi" ? row.titleHi || row.title : row.title,description:row.description,entities:row.entityIds,location:row.location?.name,source:row.evidenceIds.join(", "),confidence:row.confidence >= .9 ? "confirmed" : "probable"})))).catch(e => {setEvents([]);setError(e.message);}); },[locale]);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const filtered = timelineEvents.filter((e) => {
+  const filtered = events.filter((e) => {
     const typeOk = filterType === "all" || e.type === filterType;
     const confOk = filterConf === "all" || e.confidence === filterConf;
     return typeOk && confOk;
@@ -39,7 +46,7 @@ export default function TimelinePage({ onNavigate }: Props) {
       {/* Header */}
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto">
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Chronological Investigation Timeline</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">{locale === "hi" ? "जाँच का घटनाक्रम" : "Chronological Investigation Timeline"}</h1>
           <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">CASE-2026-017 · Forensic event sequence · Multi-source correlation</p>
         </div>
       </div>
@@ -75,6 +82,7 @@ export default function TimelinePage({ onNavigate }: Props) {
       </div>
 
       <div className="max-w-[1000px] mx-auto px-6 py-10">
+        {error && <p role="alert" className="gov-panel p-4 mb-4">{error}</p>}
         {/* Timeline container */}
         <div className="relative">
           {/* Vertical spine (solid, institutional) */}
@@ -147,7 +155,8 @@ export default function TimelinePage({ onNavigate }: Props) {
                                   className="text-[var(--color-primary)] font-semibold hover:underline flex items-center gap-1"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    onNavigate("evidence");
+                                    const cited = ev.source.match(/EV-2026-\d+/)?.[0];
+                                    onNavigate(cited ? "evidence-detail" : "evidence",cited);
                                   }}
                                 >
                                   Examine evidence <ChevronRight size={11} />

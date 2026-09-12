@@ -1,17 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import { Brain, Send, ChevronRight, Loader, X, MessageSquareText } from "../components/icons";
 import { copilotResponses } from "../data/dummy";
+import { api, appMode } from "../lib/api";
+import { useLocale } from "../context/LocaleContext";
 
-interface Props { onNavigate: (page: string) => void; }
+interface Props { onNavigate: (page: string, param?: string) => void; }
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  citations?: string[];
+  confidence?: number;
 }
 
 const suggestedQuestions = [
-  { q: "Connections to Person-A?", key: "connections" },
+  { q: "Why is Vikram Singh important?", key: "connections" },
   { q: "Recent changes?", key: "changed" },
   { q: "Similar patterns?", key: "pattern" },
 ];
@@ -35,6 +39,7 @@ function formatResponse(text: string) {
 }
 
 export default function CopilotWidget({ onNavigate }: Props) {
+  const { locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -53,17 +58,15 @@ export default function CopilotWidget({ onNavigate }: Props) {
     }
   }, [messages, isOpen]);
 
-  const getResponse = (q: string): string => {
+  const getResponse = (q: string): { content: string; citations: string[]; confidence: number } => {
     const lower = q.toLowerCase();
-    if (lower.includes("connected") || lower.includes("connection")) return copilotResponses.connections;
-    if (lower.includes("important") || lower.includes("highlighted") || lower.includes("why")) return copilotResponses.important;
-    if (lower.includes("changed") || lower.includes("new") || lower.includes("update")) return copilotResponses.changed;
-    if (lower.includes("pattern") || lower.includes("historical") || lower.includes("before")) return copilotResponses.pattern;
-    if (lower.includes("missing") || lower.includes("gap") || lower.includes("unknown")) return copilotResponses.missing;
-    return `Based on the current investigation data for CASE-2026-017, I found the following relevant to your query:\n\n**Analysis Result:**\n- Query processed against case entities and relationships\n- Cross-referencing with CDR records, financial data, and surveillance reports\n- No direct match found. Try asking about: connections, alerts, changes, or missing information.\n\n*All responses are based on investigation data and require human verification before operational use.*`;
+    if (lower.includes("vikram") || lower.includes("important") || lower.includes("why")) return { content:"**Evidence-backed lead:**\nVikram Singh is a bridge entity because the field note links him to Vehicle V001 and fictional cross-case record CASE-X007. This prioritizes review; it does not establish guilt.", citations:["EV-2026-0007"], confidence:.86 };
+    if (lower.includes("connected") || lower.includes("connection")) return { content:"**Connection analysis:**\nRaj Mehta is connected to Arjun Verma by a call record and to Vehicle V001 by the synthetic CCTV evidence.", citations:["EV-2026-0002","EV-2026-0004","EV-2026-0006"], confidence:.92 };
+    if (lower.includes("changed") || lower.includes("new") || lower.includes("update")) return { content:"**Latest supported change:**\nThe investigation note added a cross-case lead connecting Vikram Singh, Vehicle V001 and CASE-X007.", citations:["EV-2026-0007"], confidence:.86 };
+    return { content:"I could not match that question to a supported deterministic query. Ask why Vikram Singh is important or which evidence connects Raj Mehta to Vehicle V001.", citations:[], confidence:.35 };
   };
 
-  const sendMessage = (q?: string) => {
+  const sendMessage = async (q?: string) => {
     const text = q || input.trim();
     if (!text) return;
     const userMsg: Message = {
@@ -74,15 +77,21 @@ export default function CopilotWidget({ onNavigate }: Props) {
     setMessages(m => [...m, userMsg]);
     setInput("");
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const result = appMode === "full" ? await api.copilot("CASE-2026-017", text, locale) : getResponse(text);
       const assistantMsg: Message = {
         role: "assistant",
-        content: getResponse(text),
+        content: result.answer || result.content,
         timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+        citations: result.citations || [],
+        confidence: result.confidence,
       };
       setMessages(m => [...m, assistantMsg]);
+    } catch (cause) {
+      setMessages(m => [...m, { role:"assistant", content:cause instanceof Error ? cause.message : "Unable to answer.", timestamp:new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}), citations:[], confidence:0 }]);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -147,6 +156,14 @@ export default function CopilotWidget({ onNavigate }: Props) {
                 <div className={`text-[9px] mt-1.5 ${msg.role === "user" ? "text-white/70 text-right" : "text-[var(--color-text-muted)]"}`}>
                   {msg.timestamp}
                 </div>
+
+                {msg.role === "assistant" && msg.confidence !== undefined && (
+                  <div className="mt-2 text-[10px] font-mono text-[var(--color-text-muted)]">Confidence: {Math.round(msg.confidence * 100)}%</div>
+                )}
+
+                {msg.role === "assistant" && msg.citations && msg.citations.length > 0 && (
+                  <div className="mt-2"><div className="text-[9px] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Supporting evidence</div><div className="flex flex-wrap gap-1">{msg.citations.map(id=><button key={id} onClick={()=>{onNavigate("evidence-detail",id);setIsOpen(false)}} className="text-[10px] font-mono border border-[var(--color-primary)] text-[var(--color-primary)] px-2 py-1">{id}</button>)}</div></div>
+                )}
 
                 {msg.role === "assistant" && i > 0 && (
                   <div className="flex gap-2 mt-3 flex-wrap">

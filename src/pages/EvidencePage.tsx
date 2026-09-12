@@ -1,8 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, Shield, FileText, CheckCircle, ChevronRight, Upload, Lock, Video, Headphones, Image as ImageIcon, Database, ClipboardList, Brain, Eye, X } from "../components/icons";
 import { evidence, EvidenceItem } from "../data/dummy";
+import { api, appMode, browserSha256 } from "../lib/api";
 
-interface Props { onNavigate: (page: string) => void; }
+interface Props { onNavigate: (page: string, param?: string) => void; }
 
 function statusStyle(s: string): React.CSSProperties {
   if (s === "processed") return { color: "var(--color-success)", borderColor: "var(--color-success)", background: "var(--color-surface-2)" };
@@ -35,6 +36,11 @@ export default function EvidencePage({ onNavigate }: Props) {
   const [uploadStep, setUploadStep] = useState("");
   const [uploadComplete, setUploadComplete] = useState(false);
   const [localEvidence, setLocalEvidence] = useState<EvidenceItem[]>(evidence);
+  const [loadError, setLoadError] = useState("");
+  useEffect(() => {
+    if (appMode !== "full") return;
+    api.listEvidence().then(items => setLocalEvidence(items.map(saved => ({ id:saved.id, type:saved.type as EvidenceItem["type"], title:saved.name, source:"Secure evidence intake", date:saved.created_at.slice(0,10), caseId:saved.case_id, size:`${(saved.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${saved.sha256}`, uploadedBy:"Authenticated intake", status:saved.status === "analyzed" ? "processed" : "pending", entities:[] })))).catch(cause => { setLocalEvidence([]); setLoadError(cause.message); });
+  }, []);
 
   const filtered = localEvidence.filter(ev => {
     const t = typeFilter === "all" || ev.type === typeFilter;
@@ -44,58 +50,32 @@ export default function EvidencePage({ onNavigate }: Props) {
 
   const selectedEvidence = localEvidence.find(e => e.id === selected);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Start simulated upload flow
+    if (file.size > 100 * 1024 * 1024) { setLoadError("Evidence must be 100 MB or smaller."); return; }
     setIsUploading(true);
     setUploadComplete(false);
     setUploadProgress(0);
-    setUploadStep("Hashing and encrypting file...");
-
-    setTimeout(() => {
-      setUploadProgress(30);
-      setUploadStep("Uploading to secure storage...");
-    }, 800);
-
-    setTimeout(() => {
-      setUploadProgress(60);
-      setUploadStep("Extracting entities (NLP / NER)...");
-    }, 1800);
-
-    setTimeout(() => {
-      setUploadProgress(90);
-      setUploadStep("Updating knowledge graph...");
-    }, 2800);
-
-    setTimeout(() => {
-      setUploadProgress(100);
-      setUploadStep("Processing complete.");
-      setIsUploading(false);
-      setUploadComplete(true);
-
-      // Add mock uploaded item
-      const newItem: EvidenceItem = {
-        id: `EVD-NEW-${Math.floor(Math.random() * 1000)}`,
-        type: file.type.includes("image") ? "image" : file.type.includes("video") ? "video" : "document",
-        title: file.name,
-        source: "Manual Upload via Portal",
-        date: new Date().toISOString().split("T")[0],
-        caseId: "CASE-2026-017",
-        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-        hash: `sha256:${Math.random().toString(36).substring(2, 15)}...`,
-        uploadedBy: "Investigator (Current User)",
-        status: "processed",
-        entities: ["PERSON-F", "ORG-042", "LOCATION-NEW"],
-      };
-
-      setLocalEvidence([newItem, ...localEvidence]);
-      setSelected(newItem.id);
-
-      // Reset file input
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }, 3800);
+    setUploadStep("Calculating deterministic SHA-256...");
+    try {
+      const digest = await browserSha256(file);
+      setUploadProgress(35);
+      setUploadStep(appMode === "full" ? "Uploading to MinIO secure storage..." : "Creating a browser-only showcase record...");
+      let newItem: EvidenceItem;
+      if (appMode === "full") {
+        const saved = await api.uploadEvidence("CASE-2026-017", file, "Uploaded during the Operation Nightfall demonstration.");
+        newItem = { id:saved.id, type:saved.type as EvidenceItem["type"], title:saved.name, source:"Secure evidence intake", date:saved.created_at.slice(0,10), caseId:saved.case_id, size:`${(saved.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${saved.sha256}`, uploadedBy:"Current authenticated user", status:"processing", entities:[] };
+      } else {
+        newItem = { id:`LOCAL-${digest.slice(0,8).toUpperCase()}`, type:file.type.includes("image")?"image":file.type.includes("video")?"video":file.type.includes("audio")?"audio":file.type.includes("csv")?"data":"document", title:file.name, source:"Browser showcase intake (not persisted)", date:new Date().toISOString().slice(0,10), caseId:"CASE-2026-017", size:`${(file.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${digest}`, uploadedBy:"Showcase visitor", status:"pending", entities:[] };
+      }
+      setUploadProgress(100); setUploadStep(appMode === "full" ? "Stored and hashed. Open the record to register and analyze it." : "Hash complete. Start the local stack to persist, register and analyze it."); setUploadComplete(true); setLocalEvidence(current=>[newItem,...current]); setSelected(newItem.id);
+    } catch (cause) {
+      setUploadStep(cause instanceof Error ? cause.message : "Upload failed.");
+    } finally {
+      setIsUploading(false); if(fileInputRef.current) fileInputRef.current.value="";
+    }
   };
 
   return (
@@ -104,7 +84,7 @@ export default function EvidencePage({ onNavigate }: Props) {
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mb-1">Evidence Library</h1>
-            <p className="text-[var(--color-text-secondary)] text-[14px]">CASE-2026-017 · {localEvidence.length} items · All secured and hash-verified</p>
+            <p className="text-[var(--color-text-secondary)] text-[14px]">CASE-2026-017 · {localEvidence.length} items · {appMode === "full" ? "Persistent secure intake" : "Fictional showcase evidence"}</p>
           </div>
           <div className="flex items-center gap-3">
             <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
@@ -117,14 +97,15 @@ export default function EvidencePage({ onNavigate }: Props) {
       </div>
 
       <div className="max-w-[1200px] mx-auto px-6 py-8">
+        {loadError && <div role="alert" className="gov-panel p-4 mb-4">{loadError}</div>}
 
         {/* Upload Progress Banner */}
         {(isUploading || uploadComplete) && (
           <div className="gov-panel p-5 mb-8" style={{ borderColor: uploadComplete ? "var(--color-success)" : "var(--color-primary)" }}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[14px] flex items-center gap-2">
-                {uploadComplete ? <CheckCircle style={{ color: "var(--color-success)" }} size={16} /> : <Loader className="animate-spin" style={{ color: "var(--color-primary)" }} size={16} />}
-                {uploadComplete ? "Upload and Extraction Complete" : "Processing Evidence"}
+                {uploadComplete ? <CheckCircle style={{ color: "var(--color-success)" }} size={16} /> : <Loader className="animate-spin text-[var(--color-primary)]" size={16} />}
+                {uploadComplete ? "Hashing and Intake Complete" : "Processing Evidence"}
               </h3>
               <span className="text-[12px] font-mono text-[var(--color-text-muted)]">{uploadProgress}%</span>
             </div>
@@ -143,13 +124,8 @@ export default function EvidencePage({ onNavigate }: Props) {
                   <Brain size={16} />
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1">AI Extraction Results</div>
-                  <div className="text-[11px] text-[var(--color-text-secondary)] mb-2">The system automatically extracted the following entities and added them to the knowledge graph:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {["PERSON-F", "ORG-042", "LOCATION-NEW"].map(e => (
-                      <span key={e} className="text-[10px] bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] px-2 py-1 rounded-sm font-mono text-[var(--color-text-secondary)]">{e}</span>
-                    ))}
-                  </div>
+                  <div className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1">Analysis has not run yet</div>
+                  <div className="text-[11px] text-[var(--color-text-secondary)] mb-2">Open the stored record to register and analyze it. Showcase uploads remain browser-only.</div>
                 </div>
                 <button className="ml-auto text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors" onClick={() => setUploadComplete(false)}>Dismiss</button>
               </div>
@@ -248,7 +224,7 @@ export default function EvidencePage({ onNavigate }: Props) {
                   <div className="mt-5 p-3 bg-[var(--color-surface-2)] border rounded-sm" style={{ borderColor: "var(--color-success)" }}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Shield size={14} style={{ color: "var(--color-success)" }} />
-                      <span className="text-[12px] font-semibold" style={{ color: "var(--color-success)" }}>Hash Verified: Integrity Confirmed</span>
+                      <span className="text-[12px] font-semibold" style={{ color: "var(--color-success)" }}>Recorded identity — open record to verify</span>
                     </div>
                     <p className="text-[10px] font-mono text-[var(--color-text-muted)] break-all">{selectedEvidence.hash}</p>
                   </div>
@@ -256,7 +232,9 @@ export default function EvidencePage({ onNavigate }: Props) {
 
                 <button
                   className="w-full gov-panel p-4 text-left flex items-center gap-3 hover:border-[var(--color-primary)] transition-colors group"
-                  onClick={() => setShowChain(true)}
+                  disabled={selectedEvidence.id.startsWith("LOCAL-")}
+                  title={selectedEvidence.id.startsWith("LOCAL-") ? "Local secure service required for custody history" : "Open persisted evidence record"}
+                  onClick={() => onNavigate("evidence-detail", selectedEvidence.id)}
                 >
                   <div className="p-2 bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm text-[var(--color-primary)]">
                     <Lock size={16} />
@@ -269,6 +247,7 @@ export default function EvidencePage({ onNavigate }: Props) {
                 </button>
 
                 <div className="flex gap-3">
+                  {!selectedEvidence.id.startsWith("LOCAL-") && <button className="btn-premium btn-sm flex-1" onClick={() => onNavigate("evidence-detail", selectedEvidence.id)}>Open Record</button>}
                   <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("graph")}>View in Graph</button>
                   <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("timeline")}>View Timeline</button>
                 </div>

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Network, Users, Building2, Phone, Car, MapPin, Database, X, ChevronRight } from "../components/icons";
 import KnowledgeGraph3D from "../components/KnowledgeGraph3D";
 import { graphNodes, graphEdges, persons } from "../data/dummy";
+import { api, appMode } from "../lib/api";
+import type { GraphNode, GraphEdge, EntityType } from "../data/dummy";
 
 interface Props {
   onNavigate: (page: string, param?: string) => void;
@@ -20,6 +22,18 @@ const viewModes = [
 export default function GraphPage({ onNavigate }: Props) {
   const [viewMode, setViewMode] = useState("all");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [nodes, setNodes] = useState<GraphNode[]>(graphNodes);
+  const [edges, setEdges] = useState<GraphEdge[]>(graphEdges);
+  const [source, setSource] = useState(appMode === "full" ? "Connecting to Neo4j…" : "Curated showcase graph");
+
+  useEffect(() => {
+    if (appMode !== "full") return;
+    api.graph("CASE-2026-017").then((result) => {
+      const mappedNodes = result.nodes.map((node: any, index: number) => ({ id:node.id, label:node.label, type:node.type.toLowerCase() as EntityType, x:120+(index%4)*165, y:100+Math.floor(index/4)*155, highlighted:node.id==="PERSON-P004", data:{...node.properties,evidenceCount:node.evidenceCount} }));
+      const mappedEdges = result.edges.map((edge:any)=>({id:edge.id,source:edge.source,target:edge.target,label:edge.type,confidence:edge.confidence,evidenceIds:edge.evidenceIds}));
+      setNodes(mappedNodes); setEdges(mappedEdges); setSource("Neo4j-backed investigation graph");
+    }).catch(() => setSource("Backend unavailable — showing curated showcase graph"));
+  }, []);
 
   const selectedPerson = selectedNodeId ? persons.find((p) => p.id === selectedNodeId) : null;
 
@@ -31,12 +45,12 @@ export default function GraphPage({ onNavigate }: Props) {
           <div>
             <h1 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">Master Investigation Graph</h1>
             <p className="text-[var(--color-text-secondary)] text-[12px] mt-0.5 font-mono">
-              CASE-2026-017 / OPERATION INDRA NET · {graphNodes.length} entities · {graphEdges.length} relationships
+              CASE-2026-017 / OPERATION NIGHTFALL · {nodes.length} entities · {edges.length} relationships
             </p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 border border-[var(--color-border-subtle)] rounded-sm bg-[var(--color-surface)]">
             <span className="w-2 h-2 rounded-full bg-[var(--color-success)]" />
-            <span className="text-[11px] font-semibold text-[var(--color-text-secondary)]">Graph engine online</span>
+            <span className="text-[11px] font-semibold text-[var(--color-text-secondary)]">{source}</span>
           </div>
         </div>
       </div>
@@ -61,8 +75,8 @@ export default function GraphPage({ onNavigate }: Props) {
       <div className="max-w-[1440px] mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6">
         <div className="flex-1 min-w-0">
           <KnowledgeGraph3D
-            nodes={viewMode === "all" ? graphNodes : graphNodes.filter((n) => n.type === viewMode)}
-            edges={graphEdges}
+            nodes={viewMode === "all" ? nodes : nodes.filter((n) => n.type === viewMode)}
+            edges={edges}
             height={640}
             selectedId={selectedNodeId}
             onNodeSelect={setSelectedNodeId}
@@ -135,11 +149,11 @@ export default function GraphPage({ onNavigate }: Props) {
                 </>
               ) : (
                 <div className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
-                  Entity type: <strong className="text-[var(--color-text-primary)] font-mono">{graphNodes.find((n) => n.id === selectedNodeId)?.type}</strong>
+                  Entity type: <strong className="text-[var(--color-text-primary)] font-mono">{nodes.find((n) => n.id === selectedNodeId)?.type}</strong>
                   <p className="mt-2">
-                    Connected to{" "}
+                    Evidence-backed connections: {" "}
                     <strong className="text-[var(--color-primary)]">
-                      {graphEdges.filter((e) => e.source === selectedNodeId || e.target === selectedNodeId).length}
+                      {edges.filter((e) => e.source === selectedNodeId || e.target === selectedNodeId).length}
                     </strong>{" "}
                     other entities in this cluster.
                   </p>
@@ -151,7 +165,7 @@ export default function GraphPage({ onNavigate }: Props) {
             <div className="gov-panel p-5">
               <h3 className="font-bold text-[var(--color-text-primary)] text-[12px] uppercase tracking-wider mb-3">Linked entities</h3>
               <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {graphEdges
+                {edges
                   .filter((e) => e.source === selectedNodeId || e.target === selectedNodeId)
                   .map((e) => {
                     const other = e.source === selectedNodeId ? e.target : e.source;
@@ -165,7 +179,7 @@ export default function GraphPage({ onNavigate }: Props) {
                           <span className="w-1.5 h-1.5 bg-[var(--color-primary)] rounded-full flex-shrink-0" />
                           <span className="text-[12px] font-mono text-[var(--color-text-primary)] truncate">{other}</span>
                         </div>
-                        <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{e.label}</span>
+                        <span className="text-[10px] text-[var(--color-text-muted)] font-mono text-right">{e.label}<small className="block">{Math.round((e.confidence ?? .85)*100)}% · {(e.evidenceIds||[]).join(", ")||"source pending"}</small></span>
                       </button>
                     );
                   })}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronRight, AlertTriangle, Users, Upload, FileText, Activity,
   Brain, Eye, Network, Plus, CheckCircle, CreditCard, Radio, X
@@ -6,6 +6,9 @@ import {
 import { cases, persons, alerts, evidence } from "../data/dummy";
 import InvestigationGraph from "../components/InvestigationGraph";
 import { graphEdges } from "../data/dummy";
+import { useSearchParams } from "react-router-dom";
+import { api, appMode } from "../lib/api";
+import type { Case } from "../data/dummy";
 
 interface Props {
   caseId: string;
@@ -19,6 +22,10 @@ const tabs = [
   { id: "evidence", label: "Evidence", icon: <FileText size={14} /> },
   { id: "alerts", label: "Alerts", icon: <AlertTriangle size={14} /> },
   { id: "upload", label: "Upload Evidence", icon: <Upload size={14} /> },
+  { id: "timeline", label: "Timeline", icon: <Activity size={14} />, route: "timeline" },
+  { id: "map", label: "Map", icon: <Radio size={14} />, route: "map" },
+  { id: "network", label: "Network", icon: <Network size={14} />, route: "network" },
+  { id: "reports", label: "Reports", icon: <FileText size={14} />, route: "reports" },
 ];
 
 function priorityStyle(p: string): React.CSSProperties {
@@ -36,13 +43,21 @@ const successStyle: React.CSSProperties = { color: "var(--color-success)", borde
 const criticalStyle: React.CSSProperties = { color: "var(--color-alert-critical)", borderColor: "var(--color-alert-critical)", background: "var(--color-surface-2)" };
 
 export default function CaseDetail({ caseId, onNavigate }: Props) {
-  const [activeTab, setActiveTab] = useState("graph");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "graph";
+  const setActiveTab = (tab: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", tab);
+    setSearchParams(next);
+  };
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [showUploadFlow, setShowUploadFlow] = useState(false);
   const [uploadStep, setUploadStep] = useState(0);
   const [showPersonProfile, setShowPersonProfile] = useState<string | null>(null);
+  const [remoteCase, setRemoteCase] = useState<Case | null>(null);
 
-  const currentCase = cases.find(c => c.id === caseId) || cases[0];
+  useEffect(()=>{if(appMode!=="full")return;api.getCase(caseId).then(c=>setRemoteCase({id:c.id,title:c.title,type:"Investigation",status:c.status,priority:c.priority==="critical"?"high":c.priority,date:c.created_at.slice(0,10),location:"Delhi NCR",description:c.description,assignedTo:c.lead_investigator,entities:c.counts?.entities||0,alerts:c.counts?.alerts||0,lastUpdated:c.updated_at})).catch(()=>setRemoteCase(null));},[caseId]);
+  const currentCase = remoteCase || cases.find(c => c.id === caseId) || cases[0];
   const caseAlerts = alerts.slice(0, 5);
   const caseEvidence = evidence;
   const casePersons = persons;
@@ -53,14 +68,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
   ];
 
   const handleUpload = () => {
-    setShowUploadFlow(true);
-    setUploadStep(0);
-    const interval = setInterval(() => {
-      setUploadStep(s => {
-        if (s >= uploadSteps.length - 1) { clearInterval(interval); return s; }
-        return s + 1;
-      });
-    }, 600);
+    onNavigate("evidence");
   };
 
   const composition = [
@@ -128,7 +136,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
             <button
               key={t.id}
               className={`gov-tab flex items-center gap-2 whitespace-nowrap ${activeTab === t.id ? "is-active" : ""}`}
-              onClick={() => { setActiveTab(t.id); if (t.id === "upload") setShowUploadFlow(false); }}
+              onClick={() => { if (t.route) onNavigate(t.route); else setActiveTab(t.id); if (t.id === "upload") setShowUploadFlow(false); }}
             >
               {t.icon}{t.label}
             </button>
@@ -204,8 +212,8 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     <h3 className="font-bold text-[var(--color-alert-critical)] text-[13px] uppercase tracking-wider">Detected Roles</h3>
                   </div>
                   {[
-                    { id: "PERSON-A", role: "Primary Entity, degree centrality 7", color: "text-[var(--color-alert-critical)]" },
-                    { id: "PERSON-F", role: "Bridge Node, connects 2 cross-case clusters", color: "text-[var(--color-alert-high)]" },
+                    { id: "PERSON-P001", role: "Primary Entity, degree centrality 7", color: "text-[var(--color-alert-critical)]" },
+                    { id: "PERSON-P006", role: "Bridge Node, connects 2 cross-case clusters", color: "text-[var(--color-alert-high)]" },
                     { id: "ORG-042", role: "Hub Entity, 3 primary suspects linked", color: "text-[var(--color-primary)]" },
                   ].map(r => (
                     <button
@@ -269,9 +277,9 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                 </h3>
                 <div className="space-y-3">
                   {[
-                    "Critical alert generated: Communication burst detected on PERSON-A (60 calls/day)",
+                    "Critical alert generated: Communication burst detected on PERSON-P001 (60 calls/day)",
                     "3 new CDR records ingested and cross-matched with telecom cell towers",
-                    "Bridge entity resolved: PERSON-F connected to CASE-2025-089 syndicate",
+                    "Bridge entity resolved: PERSON-P006 connected to CASE-2025-089 syndicate",
                     "CCTV surveillance footage processed via facial recognition pipeline",
                     "Financial anomaly flagged: ₹18.4L transfer to offshore transit entity",
                   ].map((c, i) => (
@@ -467,7 +475,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                       </h3>
                       <p className="text-[12px] text-[var(--color-text-secondary)] mb-3">6 entities and 8 relationships resolved from document:</p>
                       <div className="flex flex-wrap gap-2">
-                        {["PERSON-A", "LOCATION-01", "PHONE-9810XXXX", "ORG-042", "2026-01-14", "EVENT-001"].map(e => (
+                        {["PERSON-P001", "LOCATION-01", "PHONE-9810XXXX", "ORG-042", "2026-01-14", "EVENT-001"].map(e => (
                           <span key={e} className="text-[11px] bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] px-2.5 py-1 rounded-sm font-mono">{e}</span>
                         ))}
                       </div>

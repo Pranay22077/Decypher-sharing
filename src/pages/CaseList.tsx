@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, ChevronRight, FolderOpen, Bell, MapPin, Calendar, User, X } from "../components/icons";
-import { cases } from "../data/dummy";
+import { cases, Case } from "../data/dummy";
+import { api, appMode } from "../lib/api";
 
 interface Props {
   onNavigate: (page: string, param?: string) => void;
@@ -29,8 +30,23 @@ export default function CaseList({ onNavigate }: Props) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showNewCase, setShowNewCase] = useState(false);
+  const [newCase, setNewCase] = useState({title:"",type:"",location:"",priority:"medium",description:""});
+  const [createError, setCreateError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [caseItems,setCaseItems] = useState<Case[]>(cases);
+  useEffect(() => {if(appMode !== "full") return;api.listCases().then(rows => setCaseItems(rows.map(c => ({id:c.id,title:c.title,type:"Investigation",status:c.status,priority:c.priority === "critical" ? "high" : c.priority,date:c.created_at.slice(0,10),location:"Delhi NCR",description:c.description,assignedTo:c.lead_investigator,entities:c.counts?.entities || 0,alerts:c.counts?.alerts || 0,lastUpdated:c.updated_at})))).catch(e => {setCaseItems([]);setCreateError(e.message);});},[]);
 
-  const filtered = cases.filter(c => {
+  const createCase = async () => {
+    if(newCase.title.trim().length<3 || newCase.description.trim().length<10){setCreateError("Add a title and a description of at least 10 characters.");return;}
+    setCreating(true);setCreateError("");
+    try{
+      if(appMode==="full"){const created=await api.createCase({title:newCase.title,description:newCase.description,priority:newCase.priority});setShowNewCase(false);onNavigate("case-detail",created.id);}
+      else{setCreateError("Local secure service required to create a persistent case. Explore Operation Nightfall instead.");}
+    }catch(cause){setCreateError(cause instanceof Error?cause.message:"Unable to create case.");}
+    finally{setCreating(false);}
+  };
+
+  const filtered = caseItems.filter(c => {
     const matchFilter = filter === "all" || c.status === filter || c.priority === filter;
     const matchSearch = !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.id.toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
@@ -176,15 +192,18 @@ export default function CaseList({ onNavigate }: Props) {
               Create New Investigation Case
             </h2>
             <div className="space-y-4">
+              {createError&&<div className="p-3 border border-[var(--color-alert-critical)] text-sm text-[var(--color-alert-critical)]">{createError}</div>}
               {[
-                { label: "Case Title", placeholder: "e.g. Operation Indra Net" },
-                { label: "Case Type", placeholder: "e.g. Financial Fraud, Organized Crime" },
-                { label: "Primary Location", placeholder: "e.g. New Delhi, Mumbai" },
+                { key:"title", label: "Case Title", placeholder: "e.g. Operation Nightfall" },
+                { key:"type", label: "Case Type", placeholder: "e.g. Financial Fraud, Organized Crime" },
+                { key:"location", label: "Primary Location", placeholder: "e.g. New Delhi, Mumbai" },
               ].map(f => (
                 <div key={f.label}>
                   <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">{f.label}</label>
                   <input
                     type="text"
+                    value={newCase[f.key as "title"|"type"|"location"]}
+                    onChange={e=>setNewCase(c=>({...c,[f.key]:e.target.value}))}
                     placeholder={f.placeholder}
                     className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors"
                   />
@@ -192,24 +211,26 @@ export default function CaseList({ onNavigate }: Props) {
               ))}
               <div>
                 <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">Priority</label>
-                <select className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] outline-none transition-colors">
-                  <option className="bg-[var(--color-surface)]">High Priority</option>
-                  <option className="bg-[var(--color-surface)]">Medium Priority</option>
-                  <option className="bg-[var(--color-surface)]">Low Priority</option>
+                <select value={newCase.priority} onChange={e=>setNewCase(c=>({...c,priority:e.target.value}))} className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] outline-none transition-colors">
+                  <option value="high" className="bg-[var(--color-surface)]">High Priority</option>
+                  <option value="medium" className="bg-[var(--color-surface)]">Medium Priority</option>
+                  <option value="low" className="bg-[var(--color-surface)]">Low Priority</option>
                 </select>
               </div>
               <div>
                 <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">Description</label>
                 <textarea
                   rows={3}
+                  value={newCase.description}
+                  onChange={e=>setNewCase(c=>({...c,description:e.target.value}))}
                   placeholder="Summary of investigation intelligence and objectives..."
                   className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none resize-none transition-colors"
                 />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button className="btn-premium flex-1" onClick={() => { setShowNewCase(false); onNavigate("case-detail", "CASE-2026-017"); }}>
-                Initialize Case
+              <button className="btn-premium flex-1" disabled={creating} onClick={createCase}>
+                {creating?"Creating…":"Initialize Case"}
               </button>
               <button className="btn-premium-outline" onClick={() => setShowNewCase(false)}>Cancel</button>
             </div>
