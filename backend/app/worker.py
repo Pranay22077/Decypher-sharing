@@ -4,8 +4,8 @@ from sqlalchemy import select
 from uuid import uuid4
 
 from .database import SessionLocal
-from .models import Case, Evidence, ProcessingJob, Report
-from .services import analyze_evidence, build_report_pdf, graph_service, storage
+from .models import BlockchainAnchor, Case, Evidence, ProcessingJob, Report
+from .services import analyze_evidence, blockchain, build_report_pdf, generate_insights, graph_service, storage
 
 
 def run():
@@ -20,7 +20,14 @@ def run():
                         if item is None: raise ValueError("Evidence no longer exists.")
                         result = analyze_evidence(db, item, storage.get(item.object_key))
                         graph_service.sync_case(db, item.case_id)
+                        generate_insights(db, item.case_id)
                         job.result = {"analysisId": result.id, "summary": result.summary}
+                    elif job.kind == "blockchain":
+                        item = db.get(Evidence, job.target_id)
+                        if item is None: raise ValueError("Evidence no longer exists.")
+                        result = blockchain.register(item, "worker")
+                        db.add(BlockchainAnchor(evidence_id=item.id, evidence_hash=item.sha256, network=result.get("network", "local"), contract_address=result.get("contractAddress", ""), transaction_hash=result.get("transactionHash", ""), block_number=result.get("blockNumber", 0), registered_by="worker"))
+                        job.result = result
                     elif job.kind == "report":
                         options = job.result or {}; case = db.get(Case, job.target_id)
                         if case is None: raise ValueError("Case no longer exists.")

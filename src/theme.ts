@@ -1,7 +1,7 @@
 // Single source of truth for entity colours consumed by JS/SVG/three.js.
 // Kept in sync with the --entity-* custom properties in src/index.css.
-// Colour is SECONDARY encoding only: the type badge label (PER/ORG/TEL/…)
-// carries identity, so the palette is restrained and institutional, never neon.
+// The palette adapts to the current theme via CSS variables where possible;
+// these JS constants are the dark-mode defaults for Three.js rendering.
 
 export type EntityType =
   | "person"
@@ -15,39 +15,39 @@ export type EntityType =
   | "event";
 
 export const ENTITY_COLORS: Record<string, string> = {
-  person: "#12356b",
-  case: "#0b2e63",
-  org: "#b45309",
-  organization: "#b45309",
-  financial: "#b45309",
-  phone: "#1a6e6e",
-  comms: "#1a6e6e",
-  account: "#175e8a",
-  vehicle: "#5b6472",
-  location: "#1a7a4c",
-  event: "#6b7280",
+  person: "#3b82f6",
+  case: "#8b5cf6",
+  org: "#f59e0b",
+  organization: "#f59e0b",
+  financial: "#f59e0b",
+  phone: "#14b8a6",
+  comms: "#14b8a6",
+  account: "#0ea5e9",
+  vehicle: "#94a3b8",
+  location: "#22c55e",
+  event: "#64748b",
 };
 
-// Institutional chrome / status tokens (mirror of index.css)
+// Dark-mode palette tokens (mirror of index.css dark defaults)
 export const PALETTE = {
-  primary: "#0b2e63",
-  primaryHover: "#082049",
-  accent: "#12448f",
-  surface: "#fbfcfd",
-  surface2: "#eef2f7",
-  baseBg: "#e9edf2",
-  textPrimary: "#14181f",
-  textSecondary: "#45505f",
-  textMuted: "#6b7684",
-  borderSubtle: "#d3dae2",
-  borderStrong: "#b3bdc9",
+  primary: "#3b82f6",
+  primaryHover: "#60a5fa",
+  accent: "#2563eb",
+  surface: "#030712",
+  surface2: "#1f2937",
+  baseBg: "#030712",
+  textPrimary: "#f8fafc",
+  textSecondary: "#94a3b8",
+  textMuted: "#475569",
+  borderSubtle: "#1e293b",
+  borderStrong: "#334155",
   saffron: "#FF9933",
   indiaGreen: "#138808",
   chakraBlue: "#000080",
-  critical: "#b3261e",
-  high: "#b45309",
-  medium: "#a16207",
-  success: "#1a7a4c",
+  critical: "#ef4444",
+  high: "#f97316",
+  medium: "#eab308",
+  success: "#22c55e",
 } as const;
 
 export function entityColor(type: string | undefined): string {

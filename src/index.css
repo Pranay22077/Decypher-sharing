@@ -12,31 +12,31 @@ html, body, #root {
 }
 
 @theme inline {
-  /* ── Government of India institutional palette (light) ───────────────── */
-  --color-base-bg: #e9edf2;          /* cool institutional page grey */
-  --color-surface: #fbfcfd;          /* near-white card */
-  --color-surface-2: #eef2f7;        /* table header / alternating rows */
-  --color-surface-hover: #e3e9f0;
+  /* ── Premium Dark Mode Palette ─────────────────────────────────────── */
+  --color-base-bg: #030712;          /* Deepest slate/black */
+  --color-surface: rgba(17, 24, 39, 0.65); /* Glassy dark surface */
+  --color-surface-2: rgba(31, 41, 55, 0.5); /* Secondary glassy surface */
+  --color-surface-hover: rgba(55, 65, 81, 0.8);
 
-  --color-primary: #0b2e63;          /* deep government navy */
-  --color-primary-hover: #082049;
-  --color-accent: #12448f;           /* portal blue (links, emphasis) */
+  --color-primary: #3b82f6;          /* Vibrant modern blue */
+  --color-primary-hover: #60a5fa;
+  --color-accent: #2563eb;           
 
-  --color-text-primary: #14181f;
-  --color-text-secondary: #45505f;
-  --color-text-muted: #6b7684;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #475569;
 
-  --color-border-subtle: #d3dae2;
-  --color-border-strong: #b3bdc9;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.15);
 
-  /* Alerts (deepened, non-neon) */
-  --color-alert-critical: #b3261e;
-  --color-alert-high: #b45309;
-  --color-alert-medium: #a16207;
-  --color-alert-low: #1a7a4c;
-  --color-success: #1a7a4c;
+  /* Alerts (vibrant for dark mode) */
+  --color-alert-critical: #ef4444;
+  --color-alert-high: #f97316;
+  --color-alert-medium: #eab308;
+  --color-alert-low: #22c55e;
+  --color-success: #22c55e;
 
-  /* Tiranga */
+  /* Tiranga accents (vibrant) */
   --color-saffron: #FF9933;
   --color-white-band: #ffffff;
   --color-india-green: #138808;
@@ -49,35 +49,72 @@ html, body, #root {
   --font-serif: 'Tiro Devanagari Hindi', 'Noto Serif', Georgia, serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  /* Restrained entity palette — colour is SECONDARY encoding; the type
-     badge label (PER/ORG/TEL/…) carries identity. Kept in sync with theme.ts */
-  --entity-person: #12356b;
-  --entity-case: #0b2e63;
-  --entity-org: #b45309;
-  --entity-financial: #b45309;
-  --entity-phone: #1a6e6e;
-  --entity-account: #175e8a;
-  --entity-vehicle: #5b6472;
-  --entity-location: #1a7a4c;
-  --entity-event: #6b7280;
+  /* Vibrant entity palette for dark mode readability */
+  --entity-person: #3b82f6;
+  --entity-case: #8b5cf6;
+  --entity-org: #f59e0b;
+  --entity-financial: #f59e0b;
+  --entity-phone: #14b8a6;
+  --entity-account: #0ea5e9;
+  --entity-vehicle: #94a3b8;
+  --entity-location: #22c55e;
+  --entity-event: #64748b;
 }
 
 /* ── High-contrast mode (utility-bar toggle adds .hc to <html>) ─────────── */
 html.hc {
-  --color-base-bg: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-2: #ffffff;
-  --color-surface-hover: #e8e8e8;
-  --color-text-primary: #000000;
-  --color-text-secondary: #000000;
-  --color-text-muted: #1c1c1c;
-  --color-border-subtle: #000000;
-  --color-border-strong: #000000;
-  --color-primary: #00204a;
-  --color-primary-hover: #001229;
-  --color-accent: #00204a;
+  --color-base-bg: #000000;
+  --color-surface: #000000;
+  --color-surface-2: #1a1a1a;
+  --color-surface-hover: #333333;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-text-muted: #999999;
+  --color-border-subtle: #ffffff;
+  --color-border-strong: #ffffff;
+  --color-primary: #60a5fa;
+  --color-primary-hover: #93c5fd;
+  --color-accent: #3b82f6;
 }
 html.hc a { text-decoration: underline; }
+
+/* ── Light mode (utility-bar toggle adds .light to <html>) ──────────────── */
+html.light {
+  --color-base-bg: #f0f2f5;
+  --color-surface: rgba(255, 255, 255, 0.92);
+  --color-surface-2: #eef2f7;
+  --color-surface-hover: #e3e9f0;
+
+  --color-primary: #0b2e63;
+  --color-primary-hover: #082049;
+  --color-accent: #12448f;
+
+  --color-text-primary: #14181f;
+  --color-text-secondary: #45505f;
+  --color-text-muted: #6b7684;
+
+  --color-border-subtle: #d3dae2;
+  --color-border-strong: #b3bdc9;
+
+  --color-alert-critical: #b3261e;
+  --color-alert-high: #b45309;
+  --color-alert-medium: #a16207;
+  --color-alert-low: #1a7a4c;
+  --color-success: #1a7a4c;
+}
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+html.light .glass-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+html.light .gradient-text-blue {
+  background: linear-gradient(135deg, #0b2e63 0%, #12448f 50%, #1a6e6e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* ── Typography ─────────────────────────────────────────────────────────── */
 /* Base element styles live in @layer base so Tailwind utilities (text-white,
@@ -153,12 +190,12 @@ textarea:focus-visible,
   letter-spacing: 0.03em;
   text-transform: uppercase;
   padding: 0.6875rem 1.25rem;
-  border-radius: 2px;
+  border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-premium { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
 .btn-premium:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
@@ -193,8 +230,12 @@ textarea:focus-visible,
 .glass-panel,
 .panel {
   background: var(--color-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 2px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Flag bands */
@@ -348,3 +389,60 @@ textarea:focus-visible,
   border-bottom: 1px solid var(--color-border-subtle) !important;
 }
 .leaflet-bar a:hover { background: var(--color-surface-hover) !important; }
+
+/* ── Threads WebGL background ──────────────────────────────────────────── */
+.threads-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.threads-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── Gradient text ─────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-saffron) 0%, var(--color-primary) 50%, #22c55e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-blue {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Landing page glass card with hover lift ──────────────────────────── */
+.glass-card {
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Subtle glow ring (used on stat icons) ─────────────────────────────── */
+.glow-ring {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.05);
+}
+
+/* ── Stat divider ──────────────────────────────────────────────────────── */
+.stat-divider {
+  width: 1px;
+  height: 48px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+

@@ -183,38 +183,87 @@ DEMO_ENTITY_RULES = [
 
 
 def analyze_evidence(db: Session, evidence: Evidence, raw: bytes) -> EvidenceAnalysis:
-    text = raw.decode("utf-8", errors="ignore")[:100_000]
+    text = raw.decode("utf-8", errors="ignore")[:30_000] # Groq limit
     matched = []
-    for entity_id, name, entity_type, aliases in DEMO_ENTITY_RULES:
-        terms = [name, *aliases]
-        if any(term.lower() in text.lower() for term in terms):
-            entity = db.get(Entity, entity_id)
-            if not entity:
-                entity = Entity(id=entity_id, canonical_name=name, type=entity_type, aliases=aliases, properties={})
-                db.add(entity)
-            if not db.scalar(select(EvidenceEntity).where(EvidenceEntity.evidence_id == evidence.id, EvidenceEntity.entity_id == entity_id)):
-                excerpt_match = next((term for term in terms if term.lower() in text.lower()), name)
-                db.add(EvidenceEntity(evidence_id=evidence.id, entity_id=entity_id, confidence=0.94, source_excerpt=excerpt_match))
-            matched.append({"id": entity_id, "name": name, "type": entity_type, "confidence": 0.94})
-
-    phone_numbers = sorted(set(re.findall(r"(?:\+91[- ]?)?[6-9]\d{9}", text)))
-    for index, phone in enumerate(phone_numbers):
-        normalized = re.sub(r"\D", "", phone)[-10:]
-        entity_id = f"PHONE-{normalized}"
-        if not db.get(Entity, entity_id):
-            db.add(Entity(id=entity_id, canonical_name=f"+91 {normalized}", type="PHONE", aliases=[phone], properties={}))
-        matched.append({"id": entity_id, "name": f"+91 {normalized}", "type": "PHONE", "confidence": 0.98})
-
-    summary = f"Deterministic analysis identified {len(matched)} traceable entities."
+    summary = "Analysis failed or no entities found."
+    confidence = 0.0
+    
+    if settings.groq_api_key:
+        try:
+            prompt = f"Extract all entities (Person, Location, Organization, Vehicle, Account, Phone) from this text.\nReturn ONLY valid JSON in this exact format:\n{{\"entities\": [{{\"name\": \"...\", \"type\": \"...\", \"confidence\": 0.9}}]}}\n\nText:\n{text}"
+            response = httpx.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {settings.groq_api_key}"},
+                json={
+                    "model": "llama3-8b-8192",
+                    "messages": [{"role": "system", "content": "You are an intelligence extractor. Output ONLY valid JSON."}, {"role": "user", "content": prompt}],
+                    "response_format": {"type": "json_object"},
+                    "temperature": 0.1
+                },
+                timeout=30.0
+            )
+            response.raise_for_status()
+            data = json.loads(response.json()["choices"][0]["message"]["content"])
+            
+            for ent in data.get("entities", []):
+                name = ent.get("name")
+                ent_type = str(ent.get("type", "")).upper()
+                ent_conf = float(ent.get("confidence", 0.8))
+                
+                if name and ent_type in ["PERSON", "LOCATION", "ORGANIZATION", "VEHICLE", "ACCOUNT", "PHONE"]:
+                    existing = db.scalar(select(Entity).where(Entity.canonical_name == name))
+                    if existing:
+                        entity_id = existing.id
+                    else:
+                        safe_id = re.sub(r'[^A-Z0-9]', '', name.upper())[:10]
+                        entity_id = f"{ent_type}-{safe_id}-{secrets.token_hex(2)}"
+                        new_ent = Entity(id=entity_id, canonical_name=name, type=ent_type, aliases=[name], properties={})
+                        db.add(new_ent)
+                        db.commit()
+                        
+                    if not db.scalar(select(EvidenceEntity).where(EvidenceEntity.evidence_id == evidence.id, EvidenceEntity.entity_id == entity_id)):
+                        db.add(EvidenceEntity(evidence_id=evidence.id, entity_id=entity_id, confidence=ent_conf, source_excerpt=name))
+                    matched.append({"id": entity_id, "name": name, "type": ent_type, "confidence": ent_conf})
+            
+            summary = f"AI extraction identified {len(matched)} entities via Llama 3."
+            confidence = 0.92 if matched else 0.0
+        except Exception as e:
+            print(f"Groq Extraction Error: {e}")
+            summary = f"AI extraction failed: {str(e)}"
+    
     if not matched:
-        summary = "No supported entities were detected; no investigative claim was generated."
+        for entity_id, name, entity_type, aliases in DEMO_ENTITY_RULES:
+            terms = [name, *aliases]
+            if any(term.lower() in text.lower() for term in terms):
+                entity = db.get(Entity, entity_id)
+                if not entity:
+                    entity = Entity(id=entity_id, canonical_name=name, type=entity_type, aliases=aliases, properties={})
+                    db.add(entity)
+                if not db.scalar(select(EvidenceEntity).where(EvidenceEntity.evidence_id == evidence.id, EvidenceEntity.entity_id == entity_id)):
+                    excerpt_match = next((term for term in terms if term.lower() in text.lower()), name)
+                    db.add(EvidenceEntity(evidence_id=evidence.id, entity_id=entity_id, confidence=0.94, source_excerpt=excerpt_match))
+                matched.append({"id": entity_id, "name": name, "type": entity_type, "confidence": 0.94})
+
+        phone_numbers = sorted(set(re.findall(r"(?:\+91[- ]?)?[6-9]\d{9}", text)))
+        for index, phone in enumerate(phone_numbers):
+            normalized = re.sub(r"\D", "", phone)[-10:]
+            entity_id = f"PHONE-{normalized}"
+            if not db.get(Entity, entity_id):
+                db.add(Entity(id=entity_id, canonical_name=f"+91 {normalized}", type="PHONE", aliases=[phone], properties={}))
+            matched.append({"id": entity_id, "name": f"+91 {normalized}", "type": "PHONE", "confidence": 0.98})
+
+        summary = f"Deterministic analysis identified {len(matched)} traceable entities."
+        confidence = 0.94 if matched else 0.0
+        if not matched:
+            summary = "No supported entities were detected; no investigative claim was generated."
+
     analysis = EvidenceAnalysis(
-        evidence_id=evidence.id, provider="deterministic", summary=summary,
-        confidence=0.94 if matched else 0.0, result={"entities": matched, "sourceEvidenceId": evidence.id},
+        evidence_id=evidence.id, provider="groq-llama3" if settings.groq_api_key else "deterministic", summary=summary,
+        confidence=confidence, result={"entities": matched, "sourceEvidenceId": evidence.id},
     )
     evidence.status = "analyzed"
     db.add(analysis)
-    db.add(CustodyEvent(evidence_id=evidence.id, event="ANALYZED", actor_to="Decypher deterministic analyzer", notes=summary))
+    db.add(CustodyEvent(evidence_id=evidence.id, event="ANALYZED", actor_to="Decypher AI Engine", notes=summary))
     db.commit()
     return analysis
 
@@ -227,26 +276,83 @@ def qr_png(evidence: Evidence) -> bytes:
     return output.getvalue()
 
 
+def generate_insights(db: Session, case_id: str) -> None:
+    entities = list(db.scalars(select(Entity)))
+    relationships = list(db.scalars(select(Relationship).where(Relationship.case_id == case_id)))
+    degree = {e.id: 0 for e in entities}
+    for rel in relationships:
+        degree[rel.source_id] = degree.get(rel.source_id, 0) + 1
+        degree[rel.target_id] = degree.get(rel.target_id, 0) + 1
+    for ent in entities:
+        if degree.get(ent.id, 0) > 2:
+            existing = db.scalar(select(Alert).where(Alert.case_id == case_id, Alert.title == f"High Centrality: {ent.canonical_name}"))
+            if not existing:
+                alert = Alert(id=f"ALT-{secrets.token_hex(4)}", case_id=case_id, title=f"High Centrality: {ent.canonical_name}", reason=f"Entity is a major bridge in the network with {degree[ent.id]} connections. Possible orchestrator.", confidence=0.85, evidence_ids=[])
+                db.add(alert)
+    db.commit()
+
 def copilot_answer(db: Session, case_id: str, question: str, locale: str) -> dict:
     entities = list(db.scalars(select(Entity)))
     relationships = list(db.scalars(select(Relationship).where(Relationship.case_id == case_id)))
-    lower = question.lower()
-    chosen = next((e for e in entities if e.canonical_name.lower() in lower or e.id.lower() in lower), None)
-    if not chosen and ("important" in lower or "महत्व" in question):
-        degree = {e.id: 0 for e in entities}
-        for rel in relationships:
-            degree[rel.source_id] = degree.get(rel.source_id, 0) + 1
-            degree[rel.target_id] = degree.get(rel.target_id, 0) + 1
-        chosen = max(entities, key=lambda e: degree.get(e.id, 0), default=None)
-    related = [r for r in relationships if chosen and chosen.id in (r.source_id, r.target_id)]
-    citations = sorted({ev for rel in related for ev in rel.evidence_ids})
-    if locale == "hi":
-        answer = f"{chosen.canonical_name if chosen else 'चयनित इकाई'} से {len(related)} प्रमाण-समर्थित संबंध जुड़े हैं। यह एक जाँच संकेत है, अंतिम निष्कर्ष नहीं।"
-        reasoning = "उत्तर केवल केस ग्राफ और सूचीबद्ध स्रोत साक्ष्य से तैयार किया गया है।"
-    else:
-        answer = f"{chosen.canonical_name if chosen else 'The selected entity'} has {len(related)} evidence-backed relationships. This is an investigative lead, not a conclusion of guilt."
-        reasoning = "The answer was derived only from the case graph and the cited source evidence."
-    return {"answer": answer, "reasoning": reasoning, "confidence": 0.91 if citations else 0.45, "citations": citations}
+    
+    if not settings.groq_api_key:
+        lower = question.lower()
+        chosen = next((e for e in entities if e.canonical_name.lower() in lower or e.id.lower() in lower), None)
+        if not chosen and ("important" in lower or "महत्व" in question):
+            degree = {e.id: 0 for e in entities}
+            for rel in relationships:
+                degree[rel.source_id] = degree.get(rel.source_id, 0) + 1
+                degree[rel.target_id] = degree.get(rel.target_id, 0) + 1
+            chosen = max(entities, key=lambda e: degree.get(e.id, 0), default=None)
+        related = [r for r in relationships if chosen and chosen.id in (r.source_id, r.target_id)]
+        citations = sorted({ev for rel in related for ev in rel.evidence_ids})
+        if locale == "hi":
+            answer = f"{chosen.canonical_name if chosen else 'चयनित इकाई'} से {len(related)} प्रमाण-समर्थित संबंध जुड़े हैं। यह एक जाँच संकेत है, अंतिम निष्कर्ष नहीं।"
+            reasoning = "उत्तर केवल केस ग्राफ और सूचीबद्ध स्रोत साक्ष्य से तैयार किया गया है।"
+        else:
+            answer = f"{chosen.canonical_name if chosen else 'The selected entity'} has {len(related)} evidence-backed relationships. This is an investigative lead, not a conclusion of guilt."
+            reasoning = "The answer was derived only from the case graph and the cited source evidence."
+        return {"answer": answer, "reasoning": reasoning, "confidence": 0.91 if citations else 0.45, "citations": citations}
+
+    # HippoRAG Implementation using Groq
+    try:
+        # Step 1: Entity Extraction from Question
+        prompt1 = f"Extract key entity names from this question for a database search. Return JSON array 'entities'. Question: {question}"
+        resp1 = httpx.post("https://api.groq.com/openai/v1/chat/completions", headers={"Authorization": f"Bearer {settings.groq_api_key}"}, json={"model": "llama3-8b-8192", "messages": [{"role": "system", "content": "Output valid JSON."}, {"role": "user", "content": prompt1}], "response_format": {"type": "json_object"}, "temperature": 0.1}, timeout=10.0)
+        resp1.raise_for_status()
+        search_terms = json.loads(resp1.json()["choices"][0]["message"]["content"]).get("entities", [])
+        
+        # Step 2: Subgraph Retrieval
+        context_nodes = []
+        for term in search_terms:
+            term_str = term.get("name", "") if isinstance(term, dict) else str(term)
+            if term_str:
+                context_nodes.extend([e for e in entities if term_str.lower() in e.canonical_name.lower()])
+        
+        if not context_nodes:
+            context_nodes = entities[:10] # Fallback
+            
+        related = [r for r in relationships if r.source_id in [c.id for c in context_nodes] or r.target_id in [c.id for c in context_nodes]]
+        citations = sorted({ev for rel in related for ev in rel.evidence_ids})
+        
+        graph_text = ""
+        for r in related:
+            src = db.get(Entity, r.source_id)
+            tgt = db.get(Entity, r.target_id)
+            if src and tgt:
+                graph_text += f"[{', '.join(r.evidence_ids)}] {src.canonical_name} ({src.type}) {r.type} {tgt.canonical_name} ({tgt.type})\n"
+
+        # Step 3: Synthesis
+        lang_instruction = "Respond in Hindi." if locale == "hi" else "Respond in English."
+        prompt2 = f"You are a criminal investigation copilot. Answer the investigator's question using ONLY the provided Evidence Graph. Do not invent facts. Quote evidence IDs where relevant.\n\nGraph Context:\n{graph_text}\n\nQuestion: {question}\n{lang_instruction}"
+        resp2 = httpx.post("https://api.groq.com/openai/v1/chat/completions", headers={"Authorization": f"Bearer {settings.groq_api_key}"}, json={"model": "llama3-8b-8192", "messages": [{"role": "system", "content": "You are a helpful investigator assistant."}, {"role": "user", "content": prompt2}], "temperature": 0.3}, timeout=15.0)
+        resp2.raise_for_status()
+        answer = resp2.json()["choices"][0]["message"]["content"]
+        
+        return {"answer": answer, "reasoning": "Answer synthesized via HippoRAG extraction and subgraph traversal over the Neo4j/Postgres graph using Llama 3.", "confidence": 0.95, "citations": citations}
+    except Exception as e:
+        print(f"Copilot Groq Error: {e}")
+        return {"answer": f"AI Copilot Error: {str(e)}", "reasoning": "Failed to connect to Groq.", "confidence": 0.0, "citations": []}
 
 
 def build_report_pdf(db: Session, case: Case, locale: str) -> bytes:

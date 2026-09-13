@@ -227,3 +227,18 @@ export const XCircle = (p: IconProps) => (
 export const Zap = (p: IconProps) => (
   <Svg {...p}><path d="M13 3 5 13h6l-1 8 8-10h-6z" /></Svg>
 );
+export const Sun = (p: IconProps) => (
+  <Svg {...p}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></Svg>
+);
+export const Moon = (p: IconProps) => (
+  <Svg {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></Svg>
+);
+export const ZoomIn = (p: IconProps) => (
+  <Svg {...p}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35M11 8v6M8 11h6" /></Svg>
+);
+export const ZoomOut = (p: IconProps) => (
+  <Svg {...p}><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35M8 11h6" /></Svg>
+);
+export const Maximize = (p: IconProps) => (
+  <Svg {...p}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></Svg>
+);
