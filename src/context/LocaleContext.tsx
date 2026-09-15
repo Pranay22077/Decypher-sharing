@@ -22,9 +22,13 @@ const messages = {
 type MessageKey = keyof typeof messages.en;
 const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void; t: (key: MessageKey) => string }>({ locale: "en", setLocale: () => {}, t: (key) => messages.en[key] });
 
+function readLocale(): Locale {
+  try {return localStorage.getItem("ui.lang") === "hi" ? "hi" : "en";} catch {return "en";}
+}
+
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocale] = useState<Locale>(() => localStorage.getItem("ui.lang") === "hi" ? "hi" : "en");
-  useEffect(() => { localStorage.setItem("ui.lang", locale); document.documentElement.lang = locale; }, [locale]);
+  const [locale, setLocale] = useState<Locale>(() => readLocale());
+  useEffect(() => { try {localStorage.setItem("ui.lang", locale);} catch { /* The active language still works when storage is disabled. */ } document.documentElement.lang = locale; }, [locale]);
   const value = useMemo(() => ({ locale, setLocale, t: (key: MessageKey) => messages[locale][key] }), [locale]);
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }

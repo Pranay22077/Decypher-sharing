@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { useState } from "react";
 import { AlertTriangle, ArrowRight, TrendingUp, ChevronRight, CreditCard } from "../components/icons";
 import { transactions } from "../data/dummy";
@@ -47,8 +48,8 @@ export default function FinancialPage({ onNavigate }: Props) {
       {/* Header */}
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto">
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Financial Intelligence and Trail Analysis</h1>
-          <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">Transaction mapping · Hawala anomaly detection · Asset tracing</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"><UiText>Financial Intelligence and Trail Analysis</UiText></h1>
+          <p className="text-[var(--color-text-secondary)] text-[13px] mt-1"><UiText>Transaction mapping · Hawala anomaly detection · Asset tracing</UiText></p>
         </div>
       </div>
 
@@ -58,7 +59,7 @@ export default function FinancialPage({ onNavigate }: Props) {
           {summary.map((s, i) => (
             <div key={i} className="gov-panel p-5 gov-accent-top">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">{s.label}</span>
+                <span className="text-[12px] font-medium text-[var(--color-text-secondary)]"><UiText>{s.label}</UiText></span>
                 <span className="w-2 h-2 rounded-full" style={{ background: s.tone }} />
               </div>
               <div className="text-2xl font-bold stat-number" style={{ color: s.tone }}>
@@ -73,18 +74,18 @@ export default function FinancialPage({ onNavigate }: Props) {
         <div className="gov-panel p-6 mb-8">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-bold text-[var(--color-text-primary)] text-base flex items-center gap-2">
-              <TrendingUp size={18} className="text-[var(--color-primary)]" />
+              <TrendingUp size={18} className="text-[var(--color-primary)]" /><UiText>
               Automated Fund Flow Topology
-            </h3>
+            </UiText></h3>
             <span className="text-[11px] text-[var(--color-text-muted)] font-mono">CASE-2026-017 / FIU-MATCH</span>
           </div>
           <p className="text-[11px] text-[var(--color-text-muted)] mb-4">
             {trace ? (
-              <>
-                Tracing flows through <strong className="text-[var(--color-primary)] font-mono">{nodeById(trace).label}</strong>.{" "}
-                <button className="text-[var(--color-accent)] hover:underline font-medium" onClick={() => setTrace(null)}>
+              <><UiText>
+                Tracing flows through </UiText><strong className="text-[var(--color-primary)] font-mono"><UiText>{nodeById(trace).label}</UiText></strong>.<UiText>{" "}</UiText>
+                <button className="text-[var(--color-accent)] hover:underline font-medium" onClick={() => setTrace(null)}><UiText>
                   Clear trace
-                </button>
+                </UiText></button>
               </>
             ) : (
               "Select an account to trace the flows that pass through it."
@@ -130,7 +131,7 @@ export default function FinancialPage({ onNavigate }: Props) {
                       markerEnd={marker}
                     />
                     <text x={midx} y={midy - 8} textAnchor="middle" fill={color} fontSize="9" fontWeight={e.high ? 700 : 600} opacity={opacity}>
-                      {e.label}
+                      <UiText>{e.label}</UiText>
                     </text>
                   </g>
                 );
@@ -138,9 +139,9 @@ export default function FinancialPage({ onNavigate }: Props) {
 
               {/* Circular layering loop annotation */}
               <path d="M 305 172 Q 355 205 405 172" fill="none" stroke="var(--color-alert-high)" strokeWidth="1.8" strokeDasharray="4,3" markerEnd="url(#fin-arrow-critical)" />
-              <text x="355" y="212" textAnchor="middle" fill="var(--color-alert-high)" fontSize="9" fontWeight="700">
+              <text x="355" y="212" textAnchor="middle" fill="var(--color-alert-high)" fontSize="9" fontWeight="700"><UiText>
                 Circular layering loop detected
-              </text>
+              </UiText></text>
 
               {/* Nodes */}
               {flowNodes.map((n) => {
@@ -151,7 +152,7 @@ export default function FinancialPage({ onNavigate }: Props) {
                     {active && <rect x={n.x - 59} y={n.y - 29} width="118" height="56" rx="2" fill="none" stroke="var(--color-saffron)" strokeWidth="2.5" />}
                     <rect x={n.x - 55} y={n.y - 25} width="110" height="48" rx="2" fill="var(--color-surface)" stroke={n.tone} strokeWidth="1.5" />
                     <text x={n.x} y={n.y - 5} textAnchor="middle" fill="var(--color-text-primary)" fontSize="11" fontWeight="700">
-                      {n.label}
+                      <UiText>{n.label}</UiText>
                     </text>
                     <text x={n.x} y={n.y + 12} textAnchor="middle" fill="var(--color-text-muted)" fontSize="9">
                       {n.sub}
@@ -164,7 +165,7 @@ export default function FinancialPage({ onNavigate }: Props) {
         </div>
 
         {/* Transaction list */}
-        <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-4 uppercase tracking-wider">Transaction Ledger</h3>
+        <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-4 uppercase tracking-wider"><UiText>Transaction Ledger</UiText></h3>
         <div className="space-y-3">
           {transactions.map((t) => (
             <div
@@ -193,9 +194,9 @@ export default function FinancialPage({ onNavigate }: Props) {
                         {t.method}
                       </span>
                       {t.flagged && (
-                        <span className="text-[10px] font-bold text-white bg-[var(--color-alert-critical)] px-2 py-0.5 rounded-sm uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-white bg-[var(--color-alert-critical)] px-2 py-0.5 rounded-sm uppercase tracking-widest"><UiText>
                           High Alert
-                        </span>
+                        </UiText></span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-[14px] mt-1">
@@ -213,8 +214,8 @@ export default function FinancialPage({ onNavigate }: Props) {
                             e.stopPropagation();
                             onNavigate("evidence");
                           }}
-                        >
-                          View FIU source document <ChevronRight size={12} />
+                        ><UiText>
+                          View FIU source document </UiText><ChevronRight size={12} />
                         </button>
                         <button
                           className="text-[12px] text-[var(--color-accent)] font-semibold hover:underline flex items-center gap-1"
@@ -222,8 +223,8 @@ export default function FinancialPage({ onNavigate }: Props) {
                             e.stopPropagation();
                             onNavigate("graph");
                           }}
-                        >
-                          Trace in investigation graph <ChevronRight size={12} />
+                        ><UiText>
+                          Trace in investigation graph </UiText><ChevronRight size={12} />
                         </button>
                       </div>
                     )}
@@ -232,7 +233,7 @@ export default function FinancialPage({ onNavigate }: Props) {
 
                 <div className={`text-right flex-shrink-0 ${t.flagged ? "text-[var(--color-alert-critical)]" : "text-[var(--color-text-primary)]"}`}>
                   <div className="text-xl font-bold font-mono stat-number">₹{(t.amount / 100000).toFixed(2)}L</div>
-                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider">Settled via {t.method}</div>
+                  <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider"><UiText>Settled via </UiText>{t.method}</div>
                 </div>
               </div>
             </div>

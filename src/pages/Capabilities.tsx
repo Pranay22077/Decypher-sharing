@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import {
   Shield, Database, Brain, Network, Lock, Link, FileText, Users, MapPin,
   Phone, TrendingUp, Search, Zap, BarChart3, Clock, AlertCircle
@@ -101,10 +102,10 @@ export default function Capabilities({ onNavigate }: Props) {
             <span className="flag-white" />
             <span className="flag-green" />
           </span>
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5">Platform Capabilities</h1>
-          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto">
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5"><UiText>Platform Capabilities</UiText></h1>
+          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto"><UiText>
             Decypher combines AI, machine learning, and graph analytics to deliver comprehensive criminal network intelligence.
-          </p>
+          </UiText></p>
         </div>
       </section>
 
@@ -117,8 +118,8 @@ export default function Capabilities({ onNavigate }: Props) {
                 <div className="w-11 h-11 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center mb-4">
                   {cap.icon}
                 </div>
-                <h3 className="text-[15px] font-bold mb-2 leading-snug">{cap.title}</h3>
-                <p className="text-[var(--color-text-secondary)] leading-relaxed text-[13px]">{cap.description}</p>
+                <h3 className="text-[15px] font-bold mb-2 leading-snug"><UiText>{cap.title}</UiText></h3>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed text-[13px]"><UiText>{cap.description}</UiText></p>
               </div>
             ))}
           </div>
@@ -128,13 +129,13 @@ export default function Capabilities({ onNavigate }: Props) {
       {/* CTA */}
       <section className="py-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
         <div className="max-w-[800px] mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-4">Put These Capabilities to Work</h2>
-          <p className="text-[var(--color-text-secondary)] mb-8">
+          <h2 className="text-3xl font-bold mb-4"><UiText>Put These Capabilities to Work</UiText></h2>
+          <p className="text-[var(--color-text-secondary)] mb-8"><UiText>
             See how Decypher helps your team uncover critical insights and connections.
-          </p>
+          </UiText></p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}>Access the Platform</button>
-            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("how-it-works")}>See How It Works</button>
+            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}><UiText>Access the Platform</UiText></button>
+            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("how-it-works")}><UiText>See How It Works</UiText></button>
           </div>
         </div>
       </section>

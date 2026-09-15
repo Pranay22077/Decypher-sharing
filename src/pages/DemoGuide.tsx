@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { useState } from "react";
 import { ChevronRight, Shield } from "../components/icons";
 import { api, appMode, currentSession } from "../lib/api";
@@ -23,11 +24,11 @@ export default function DemoGuide({ onNavigate }: { onNavigate:(page:string,para
     finally { setBusy(false); }
   }
   return <div className="min-h-screen bg-[var(--color-base-bg)]">
-    <header className="bg-[var(--color-primary)] p-8 text-white"><div className="max-w-[1000px] mx-auto"><p className="font-mono text-xs text-white/65">JUDGE DEMONSTRATION · 8 MINUTES</p><h1 className="text-4xl !text-white mt-2">{locale === "hi" ? "ऑपरेशन नाइटफॉल प्रदर्शन" : "Operation Nightfall walkthrough"}</h1><p className="text-white/75 mt-3">{locale === "hi" ? "मूल साक्ष्य से मानव-समीक्षित रिपोर्ट तक एक जुड़ी कहानी।" : "One connected story from source evidence to a human-reviewed report."}</p></div></header>
+    <header className="bg-[var(--color-primary)] p-8 text-white"><div className="max-w-[1000px] mx-auto"><p className="font-mono text-xs text-white/65"><UiText>JUDGE DEMONSTRATION · 8 MINUTES</UiText></p><h1 className="text-4xl !text-white mt-2">{locale === "hi" ? "ऑपरेशन नाइटफॉल प्रदर्शन" : "Operation Nightfall walkthrough"}</h1><p className="text-white/75 mt-3">{locale === "hi" ? "मूल साक्ष्य से मानव-समीक्षित रिपोर्ट तक एक जुड़ी कहानी।" : "One connected story from source evidence to a human-reviewed report."}</p></div></header>
     <main className="max-w-[1000px] mx-auto p-6">
-      <div className="gov-panel p-4 mb-5 flex items-start gap-3"><Shield /><div><strong>{appMode === "full" ? "Full secure stack" : "Public showcase mode"}</strong><p className="text-sm mt-1">{appMode === "full" ? "Service errors are shown explicitly; confirmation requires a real blockchain receipt." : "Explore fictional evidence here. Local secure service required for persistence and blockchain writes."}</p></div></div>
+      <div className="gov-panel p-4 mb-5 flex items-start gap-3"><Shield /><div><strong><UiText>{appMode === "full" ? "Full secure stack" : "Public showcase mode"}</UiText></strong><p className="text-sm mt-1"><UiText>{appMode === "full" ? "Service errors are shown explicitly; confirmation requires a real blockchain receipt." : "Explore fictional evidence here. Local secure service required for persistence and blockchain writes."}</UiText></p></div></div>
       <div className="space-y-3">{steps.map(([en,hi,page,param],i) => <button key={en} onClick={() => onNavigate(page,param)} className="gov-panel w-full p-5 flex items-center gap-4 text-left hover:border-[var(--color-primary)]"><span className="w-9 h-9 bg-[var(--color-primary)] text-white grid place-items-center font-mono">{i+1}</span><strong className="flex-1">{locale === "hi" ? hi : en}</strong><ChevronRight size={17}/></button>)}</div>
-      {appMode === "full" && currentSession()?.role === "admin" && <button className="btn-premium-outline mt-6" disabled={busy} onClick={reset}>{busy ? "Resetting…" : "Reset demo data (admin)"}</button>}
+      {appMode === "full" && currentSession()?.role === "admin" && <button className="btn-premium-outline mt-6" disabled={busy} onClick={reset}><UiText>{busy ? "Resetting…" : "Reset demo data (admin)"}</UiText></button>}
       {message && <p role="status" className="gov-panel p-4 mt-4">{message}</p>}
     </main>
   </div>;

@@ -1,3 +1,4 @@
+import UiText, { useUiTranslation } from "../components/UiText";
 import { useEffect, useState } from "react";
 import { Network, Users, Building2, Phone, Car, MapPin, Database, X, ChevronRight, GitBranch } from "../components/icons";
 import KnowledgeGraph3D from "../components/KnowledgeGraph3D";
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function GraphPage({ onNavigate }: Props) {
+  const trUi = useUiTranslation();
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nodes, setNodes] = useState<GraphNode[]>(graphNodes);
   const [edges, setEdges] = useState<GraphEdge[]>(graphEdges);
@@ -47,10 +49,10 @@ export default function GraphPage({ onNavigate }: Props) {
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-4">
         <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]">Master Investigation Graph</h1>
+            <h1 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)]"><UiText>Master Investigation Graph</UiText></h1>
             <p className="text-[var(--color-text-secondary)] text-[12px] mt-0.5 font-mono">
-              CASE-2026-017 / OPERATION NIGHTFALL · {nodes.length} entities · {edges.length} relationships
-            </p>
+              CASE-2026-017 / OPERATION NIGHTFALL · {nodes.length}<UiText> entities · </UiText>{edges.length}<UiText> relationships
+            </UiText></p>
           </div>
           <div className="flex items-center gap-3">
             {/* Source indicator */}
@@ -103,7 +105,7 @@ export default function GraphPage({ onNavigate }: Props) {
                 <button
                   className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
                   onClick={() => setSelectedNodeId(null)}
-                  aria-label="Close panel"
+                  aria-label={trUi("Close panel")}
                 >
                   <X size={16} />
                 </button>
@@ -124,8 +126,8 @@ export default function GraphPage({ onNavigate }: Props) {
                           background: selectedPerson.risk === "high" ? "rgba(239,68,68,0.1)" : "rgba(249,115,22,0.1)",
                         }}
                       >
-                        {selectedPerson.risk} Risk
-                      </div>
+                        {selectedPerson.risk}<UiText> Risk
+                      </UiText></div>
                     </div>
                   </div>
 
@@ -136,15 +138,15 @@ export default function GraphPage({ onNavigate }: Props) {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Phone size={13} className="text-[var(--color-primary)] flex-shrink-0" />
-                      <span>{selectedPerson.phones.length} phone numbers</span>
+                      <span>{selectedPerson.phones.length}<UiText> phone numbers</UiText></span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Car size={13} className="text-[var(--color-primary)] flex-shrink-0" />
-                      <span>{selectedPerson.vehicles.length} vehicles</span>
+                      <span>{selectedPerson.vehicles.length}<UiText> vehicles</UiText></span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Users size={13} className="text-[var(--color-primary)] flex-shrink-0" />
-                      <span>{selectedPerson.associates.length} known associates</span>
+                      <span>{selectedPerson.associates.length}<UiText> known associates</UiText></span>
                     </div>
                   </div>
 
@@ -152,9 +154,9 @@ export default function GraphPage({ onNavigate }: Props) {
                     className="btn-premium btn-block btn-sm"
                     style={{ borderRadius: 12 }}
                     onClick={() => onNavigate("person", selectedNodeId)}
-                  >
+                  ><UiText>
                     Open full profile
-                    <ChevronRight size={14} />
+                    </UiText><ChevronRight size={14} />
                   </button>
                 </>
               ) : (
@@ -164,12 +166,12 @@ export default function GraphPage({ onNavigate }: Props) {
                       {entityBadge(selectedNode?.type)}
                     </span>
                     <span className="uppercase text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)]">
-                      {selectedNode?.type}
+                      <UiText>{selectedNode?.type}</UiText>
                     </span>
                   </div>
                   <p>
-                    <strong className="text-[var(--color-primary)]">{connectedEdges.length}</strong> evidence-backed connections to other entities in this investigation cluster.
-                  </p>
+                    <strong className="text-[var(--color-primary)]">{connectedEdges.length}</strong><UiText> evidence-backed connections to other entities in this investigation cluster.
+                  </UiText></p>
                 </div>
               )}
             </div>
@@ -177,8 +179,8 @@ export default function GraphPage({ onNavigate }: Props) {
             {/* Connected entities */}
             <div className="glass-card p-5">
               <h3 className="font-bold text-[var(--color-text-primary)] text-[12px] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <GitBranch size={14} className="text-[var(--color-primary)]" />
-                Linked Entities ({connectedEdges.length})
+                <GitBranch size={14} className="text-[var(--color-primary)]" /><UiText>
+                Linked Entities (</UiText>{connectedEdges.length})
               </h3>
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {connectedEdges.map((e) => {
@@ -205,7 +207,7 @@ export default function GraphPage({ onNavigate }: Props) {
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
-                        <div className="text-[10px] font-mono text-[var(--color-primary)]">{e.label}</div>
+                        <div className="text-[10px] font-mono text-[var(--color-primary)]"><UiText>{e.label}</UiText></div>
                         <div className="text-[9px] text-[var(--color-text-muted)]">
                           {Math.round((e.confidence ?? 0.85) * 100)}% conf
                         </div>
@@ -218,7 +220,7 @@ export default function GraphPage({ onNavigate }: Props) {
 
             {/* Key targets quick list */}
             <div className="glass-card p-5">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-[12px] uppercase tracking-wider mb-3">Key Targets</h3>
+              <h3 className="font-bold text-[var(--color-text-primary)] text-[12px] uppercase tracking-wider mb-3"><UiText>Key Targets</UiText></h3>
               <div className="space-y-2">
                 {persons.slice(0, 4).map((p) => (
                   <button
@@ -247,10 +249,10 @@ export default function GraphPage({ onNavigate }: Props) {
         {!selectedNodeId && (
           <div className="w-full lg:w-[300px] flex-shrink-0">
             <div className="glass-card p-6">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] mb-2">Select an Entity</h3>
-              <p className="text-[12px] text-[var(--color-text-muted)] mb-5 leading-relaxed">
+              <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] mb-2"><UiText>Select an Entity</UiText></h3>
+              <p className="text-[12px] text-[var(--color-text-muted)] mb-5 leading-relaxed"><UiText>
                 Click any node in the graph to inspect its relationships, evidence connections, and forensic ties.
-              </p>
+              </UiText></p>
               <div className="space-y-2">
                 {persons.slice(0, 6).map((p) => (
                   <button

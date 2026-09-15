@@ -29,3 +29,8 @@ logs/
 # beside it.
 /.plugins/
 /.opencode-skills/
+
+# Generated from pinned processing dependencies by dev/build
+public/document-assets/
+test-results/
+playwright-report/
