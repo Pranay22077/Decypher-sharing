@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import {
   Shield, Lock, Eye, ClipboardList, FileText, AlertTriangle, Key,
   UserCheck, Database, Activity, GitBranch, Clock, Server
@@ -83,32 +84,32 @@ export default function Security({ onNavigate }: Props) {
             <span className="flag-white" />
             <span className="flag-green" />
           </span>
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5">Security and Responsible AI</h1>
-          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto">
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5"><UiText>Security and Responsible AI</UiText></h1>
+          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto"><UiText>
             Built on principles of transparency, accountability, and human oversight to support responsible intelligence operations.
-          </p>
+          </UiText></p>
         </div>
       </section>
 
       {/* Principles */}
       <section className="py-16">
         <div className="max-w-[1200px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Responsible AI Principles</h2>
+          <h2 className="text-3xl font-bold text-center mb-12"><UiText>Responsible AI Principles</UiText></h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {principles.map((principle, i) => (
               <div key={i} className="gov-panel gov-accent-top p-6">
                 <div className="w-11 h-11 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center mb-4">
                   {principle.icon}
                 </div>
-                <h3 className="text-lg font-bold mb-3">{principle.title}</h3>
-                <p className="text-[var(--color-text-secondary)] leading-relaxed mb-4 text-sm">{principle.description}</p>
+                <h3 className="text-lg font-bold mb-3"><UiText>{principle.title}</UiText></h3>
+                <p className="text-[var(--color-text-secondary)] leading-relaxed mb-4 text-sm"><UiText>{principle.description}</UiText></p>
 
                 <div className="bg-[var(--color-surface-2)] p-4 rounded-sm border border-[var(--color-border-subtle)]">
                   <ul className="space-y-2">
                     {principle.details.map((detail, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 text-xs text-[var(--color-text-secondary)]">
                         <span className="w-1.5 h-1.5 bg-[var(--color-primary)] flex-shrink-0 mt-1.5" />
-                        <span>{detail}</span>
+                        <span><UiText>{detail}</UiText></span>
                       </li>
                     ))}
                   </ul>
@@ -122,7 +123,7 @@ export default function Security({ onNavigate }: Props) {
       {/* Security Features */}
       <section className="py-16 bg-[var(--color-surface)] border-y border-[var(--color-border-subtle)]">
         <div className="max-w-[1200px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Platform Security Controls</h2>
+          <h2 className="text-3xl font-bold text-center mb-12"><UiText>Platform Security Controls</UiText></h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {securityFeatures.map((feature, i) => (
               <div key={i} className="gov-panel p-5 flex items-start gap-4">
@@ -130,8 +131,8 @@ export default function Security({ onNavigate }: Props) {
                   {feature.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1.5 text-sm">{feature.title}</h3>
-                  <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{feature.description}</p>
+                  <h3 className="font-bold mb-1.5 text-sm"><UiText>{feature.title}</UiText></h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed"><UiText>{feature.description}</UiText></p>
                 </div>
               </div>
             ))}
@@ -142,13 +143,13 @@ export default function Security({ onNavigate }: Props) {
       {/* CTA */}
       <section className="py-16">
         <div className="max-w-[800px] mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-4">Secure by Design</h2>
-          <p className="text-[var(--color-text-secondary)] mb-8">
+          <h2 className="text-3xl font-bold mb-4"><UiText>Secure by Design</UiText></h2>
+          <p className="text-[var(--color-text-secondary)] mb-8"><UiText>
             Decypher prioritizes security, privacy, and accountability in every aspect of the platform.
-          </p>
+          </UiText></p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}>Access the Platform</button>
-            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("landing")}>Back to Home</button>
+            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}><UiText>Access the Platform</UiText></button>
+            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("landing")}><UiText>Back to Home</UiText></button>
           </div>
         </div>
       </section>

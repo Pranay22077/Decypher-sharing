@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { Target, Users, Lightbulb, TrendingUp, Shield, Globe, Award, Heart, Zap } from "../components/icons";
 
 interface Props {
@@ -80,10 +81,10 @@ export default function About({ onNavigate }: Props) {
             <span className="flag-white" />
             <span className="flag-green" />
           </span>
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5">About Decypher</h1>
-          <p className="text-lg text-[var(--color-text-secondary)] max-w-[700px] mx-auto">
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5"><UiText>About Decypher</UiText></h1>
+          <p className="text-lg text-[var(--color-text-secondary)] max-w-[700px] mx-auto"><UiText>
             Transforming criminal intelligence through responsible AI innovation, built for India's investigative agencies.
-          </p>
+          </UiText></p>
         </div>
       </section>
 
@@ -97,9 +98,9 @@ export default function About({ onNavigate }: Props) {
                   <div className="w-12 h-12 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
                     {item.icon}
                   </div>
-                  <h3 className="text-xl font-bold mt-1.5">{item.title}</h3>
+                  <h3 className="text-xl font-bold mt-1.5"><UiText>{item.title}</UiText></h3>
                 </div>
-                <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed flex-1">{item.description}</p>
+                <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed flex-1"><UiText>{item.description}</UiText></p>
               </div>
             ))}
           </div>
@@ -109,13 +110,13 @@ export default function About({ onNavigate }: Props) {
       {/* What We Do */}
       <section className="py-16 bg-[var(--color-surface)] border-y border-[var(--color-border-subtle)]">
         <div className="max-w-[1000px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-8">What We Do</h2>
+          <h2 className="text-3xl font-bold text-center mb-8"><UiText>What We Do</UiText></h2>
 
           <p className="text-base text-[var(--color-text-secondary)] leading-relaxed mb-8 max-w-[820px] mx-auto text-center">
             {whatWeDo.overview}
           </p>
 
-          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide">Core Capabilities</h3>
+          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide"><UiText>Core Capabilities</UiText></h3>
           <div className="space-y-2.5 mb-10">
             {whatWeDo.capabilities.map((cap, i) => (
               <div key={i} className="flex items-start gap-3.5 bg-[var(--color-surface-2)] p-4 rounded-sm border border-[var(--color-border-subtle)]">
@@ -125,10 +126,10 @@ export default function About({ onNavigate }: Props) {
             ))}
           </div>
 
-          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide">Our Approach</h3>
+          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide"><UiText>Our Approach</UiText></h3>
           <p className="text-base text-[var(--color-text-secondary)] leading-relaxed mb-10" dangerouslySetInnerHTML={{ __html: whatWeDo.approach }} />
 
-          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide">Impact</h3>
+          <h3 className="text-lg font-bold mb-4 text-[var(--color-text-primary)] uppercase tracking-wide"><UiText>Impact</UiText></h3>
           <p className="text-base text-[var(--color-text-secondary)] leading-relaxed">{whatWeDo.impact}</p>
         </div>
       </section>
@@ -136,7 +137,7 @@ export default function About({ onNavigate }: Props) {
       {/* Values */}
       <section className="py-16">
         <div className="max-w-[1100px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Values</h2>
+          <h2 className="text-3xl font-bold text-center mb-12"><UiText>Our Values</UiText></h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {values.map((value, i) => (
               <div key={i} className="gov-panel p-6 flex items-start gap-4">
@@ -144,8 +145,8 @@ export default function About({ onNavigate }: Props) {
                   {value.icon}
                 </div>
                 <div>
-                  <h3 className="font-bold mb-1.5">{value.title}</h3>
-                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{value.description}</p>
+                  <h3 className="font-bold mb-1.5"><UiText>{value.title}</UiText></h3>
+                  <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed"><UiText>{value.description}</UiText></p>
                 </div>
               </div>
             ))}
@@ -156,13 +157,13 @@ export default function About({ onNavigate }: Props) {
       {/* CTA */}
       <section className="py-16 border-t border-[var(--color-border-subtle)]">
         <div className="max-w-[800px] mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-4">Built for India's Investigators</h2>
-          <p className="text-[var(--color-text-secondary)] mb-8">
+          <h2 className="text-3xl font-bold mb-4"><UiText>Built for India's Investigators</UiText></h2>
+          <p className="text-[var(--color-text-secondary)] mb-8"><UiText>
             See how Decypher can strengthen your investigative capabilities.
-          </p>
+          </UiText></p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}>Access the Platform</button>
-            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("landing")}>Back to Home</button>
+            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}><UiText>Access the Platform</UiText></button>
+            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("landing")}><UiText>Back to Home</UiText></button>
           </div>
         </div>
       </section>

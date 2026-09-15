@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { Database, Brain, GitBranch, Network, Eye } from "../components/icons";
 
 interface Props {
@@ -86,10 +87,10 @@ export default function HowItWorks({ onNavigate }: Props) {
             <span className="flag-white" />
             <span className="flag-green" />
           </span>
-          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5">How Decypher Works</h1>
-          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto">
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-5"><UiText>How Decypher Works</UiText></h1>
+          <p className="text-lg text-[var(--color-text-secondary)] max-w-[720px] mx-auto"><UiText>
             A structured five-stage pipeline that transforms raw data into actionable intelligence.
-          </p>
+          </UiText></p>
         </div>
       </section>
 
@@ -110,16 +111,16 @@ export default function HowItWorks({ onNavigate }: Props) {
 
                   {/* Content */}
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                    <p className="text-[var(--color-text-secondary)] leading-relaxed mb-5 text-[15px]">{step.description}</p>
+                    <h3 className="text-xl font-bold mb-3"><UiText>{step.title}</UiText></h3>
+                    <p className="text-[var(--color-text-secondary)] leading-relaxed mb-5 text-[15px]"><UiText>{step.description}</UiText></p>
 
                     <div className="bg-[var(--color-surface-2)] p-4 rounded-sm border border-[var(--color-border-subtle)]">
-                      <h4 className="text-xs font-bold text-[var(--color-text-muted)] mb-3 uppercase tracking-widest">Key Features</h4>
+                      <h4 className="text-xs font-bold text-[var(--color-text-muted)] mb-3 uppercase tracking-widest"><UiText>Key Features</UiText></h4>
                       <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                         {step.features.map((feature, idx) => (
                           <li key={idx} className="flex items-start gap-2.5 text-[13px] text-[var(--color-text-secondary)]">
                             <span className="w-1.5 h-1.5 bg-[var(--color-primary)] flex-shrink-0 mt-1.5" />
-                            <span>{feature}</span>
+                            <span><UiText>{feature}</UiText></span>
                           </li>
                         ))}
                       </ul>
@@ -142,13 +143,13 @@ export default function HowItWorks({ onNavigate }: Props) {
       {/* CTA */}
       <section className="py-16 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
         <div className="max-w-[800px] mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-4">See the Pipeline in Action</h2>
-          <p className="text-[var(--color-text-secondary)] mb-8">
+          <h2 className="text-3xl font-bold mb-4"><UiText>See the Pipeline in Action</UiText></h2>
+          <p className="text-[var(--color-text-secondary)] mb-8"><UiText>
             Move from raw data to evidence-linked insight inside the platform.
-          </p>
+          </UiText></p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}>Access the Platform</button>
-            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("capabilities")}>View Capabilities</button>
+            <button className="btn-premium btn-lg" onClick={() => onNavigate("login")}><UiText>Access the Platform</UiText></button>
+            <button className="btn-premium-outline btn-lg" onClick={() => onNavigate("capabilities")}><UiText>View Capabilities</UiText></button>
           </div>
         </div>
       </section>

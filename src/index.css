@@ -446,3 +446,23 @@ textarea:focus-visible,
   background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
 }
 
+
+/* Institutional flag imagery shared by the public hero and login panel. */
+.institutional-flag-bg {
+  background-image: url('/tiranga-dark.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+}
+.institutional-flag-scrim {
+  background: rgba(3, 7, 18, 0.5);
+}
+html.light .institutional-flag-bg {
+  background-image: url('/bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.28;
+}
+html.light .institutional-flag-scrim {
+  background: rgba(255, 255, 255, 0.34);
+}

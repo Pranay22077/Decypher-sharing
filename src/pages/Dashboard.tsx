@@ -1,4 +1,6 @@
+import UiText, { useUiTranslation } from "../components/UiText";
 import { useState } from "react";
+import { useLocale } from "../context/LocaleContext";
 import {
   AlertTriangle, FolderOpen, Clock, Activity, Shield, TrendingUp,
   Users, ChevronRight, Bell, ArrowUpRight, Database, MapPin, User, Search
@@ -32,6 +34,8 @@ function dotColor(p: string): string {
 }
 
 export default function Dashboard({ onNavigate, userRole }: Props) {
+  const trUi = useUiTranslation();
+  const { locale } = useLocale();
   const [expandAlert, setExpandAlert] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -74,6 +78,7 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
     { label: "Geo Intelligence", page: "map", icon: <Database size={16} /> },
     { label: "Timeline Analysis", page: "timeline", icon: <Clock size={16} /> },
     { label: "Financial Trails", page: "financial", icon: <TrendingUp size={16} /> },
+    { label: "Document Scanner & OCR", page: "document-tool", icon: <Search size={16} /> },
     { label: "Evidence Vault", page: "evidence", icon: <Shield size={16} /> },
   ];
 
@@ -85,27 +90,27 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div>
               <div className="text-[11px] text-[var(--color-accent)] font-mono uppercase tracking-widest mb-2">
-                {new Date().toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                {new Date().toLocaleDateString(locale === "hi" ? "hi-IN" : "en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">Command Center</h1>
+              <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)]"><UiText>Command Center</UiText></h1>
               <p className="text-[var(--color-text-secondary)] text-[14px] mt-1 capitalize">
-                {userRole === "senior" ? "Senior Investigator" : userRole} Dashboard · Decypher Platform
-              </p>
+                <UiText>{userRole === "senior" ? "Senior Investigator" : userRole}</UiText><UiText> Dashboard · Decypher Platform
+              </UiText></p>
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
               <div className="flex items-center gap-2 bg-[var(--color-base-bg)] border border-[var(--color-border-strong)] focus-within:border-[var(--color-primary)] rounded-sm px-4 py-2 flex-1 md:w-64 transition-colors">
                 <Search size={16} className="text-[var(--color-text-muted)]" />
                 <input
                   type="text"
-                  placeholder="Search active cases..."
+                  placeholder={trUi("Search active cases...")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent text-[13px] outline-none text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]"
                 />
               </div>
-              <button className="btn-premium flex-shrink-0" onClick={() => onNavigate("cases")}>
+              <button className="btn-premium flex-shrink-0" onClick={() => onNavigate("cases")}><UiText>
                 New Case
-              </button>
+              </UiText></button>
             </div>
           </div>
 
@@ -124,7 +129,7 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
                   <ArrowUpRight size={16} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] transition-colors" />
                 </div>
                 <div className="text-3xl font-bold stat-number tracking-tight" style={{ color: s.tone }}>{s.value}</div>
-                <div className="text-[12px] font-medium text-[var(--color-text-secondary)] mt-1 uppercase tracking-wide">{s.label}</div>
+                <div className="text-[12px] font-medium text-[var(--color-text-secondary)] mt-1 uppercase tracking-wide"><UiText>{s.label}</UiText></div>
               </button>
             ))}
           </div>
@@ -136,16 +141,16 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
           {/* Active Cases */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider">Active Cases</h2>
-              <button className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("cases")}>
-                View all cases <ChevronRight size={14} />
+              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider"><UiText>Active Cases</UiText></h2>
+              <button className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("cases")}><UiText>
+                View all cases </UiText><ChevronRight size={14} />
               </button>
             </div>
 
             {shownCases.length === 0 && (
-              <div className="gov-panel p-8 text-center text-[13px] text-[var(--color-text-muted)]">
-                No active cases match "{searchQuery}". Adjust your search to see results.
-              </div>
+              <div className="gov-panel p-8 text-center text-[13px] text-[var(--color-text-muted)]"><UiText>
+                No active cases match "</UiText>{searchQuery}<UiText>". Adjust your search to see results.
+              </UiText></div>
             )}
 
             {shownCases.map((c) => (
@@ -157,12 +162,12 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={priorityStyle(c.priority)}>{c.priority} priority</span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={priorityStyle(c.priority)}><UiText>{c.priority}</UiText><UiText> priority</UiText></span>
                       <span className="text-[12px] text-[var(--color-text-muted)] font-mono tracking-wide">{c.id}</span>
                     </div>
-                    <h3 className="font-bold text-[var(--color-text-primary)] text-[18px] group-hover:text-[var(--color-primary)] transition-colors mb-1">{c.title}</h3>
-                    <p className="text-[13px] text-[var(--color-primary)] font-medium mb-2">{c.type}</p>
-                    <p className="text-[13px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed mb-4">{c.description}</p>
+                    <h3 className="font-bold text-[var(--color-text-primary)] text-[18px] group-hover:text-[var(--color-primary)] transition-colors mb-1"><UiText>{c.title}</UiText></h3>
+                    <p className="text-[13px] text-[var(--color-primary)] font-medium mb-2"><UiText>{c.type}</UiText></p>
+                    <p className="text-[13px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed mb-4"><UiText>{c.description}</UiText></p>
 
                     <div className="flex flex-wrap items-center gap-3 text-[12px] text-[var(--color-text-secondary)]">
                       <div className="flex items-center gap-1.5 bg-[var(--color-surface-2)] px-3 py-1 rounded-sm border border-[var(--color-border-subtle)]">
@@ -178,20 +183,20 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
                   <div className="text-right flex-shrink-0">
                     <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-3 min-w-[80px] text-center">
                       <div className="text-xl font-bold stat-number text-[var(--color-text-primary)]">{c.entities}</div>
-                      <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5">Entities</div>
+                      <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5"><UiText>Entities</UiText></div>
                     </div>
                     {c.alerts > 0 && (
                       <div className="mt-3 flex items-center justify-center gap-1.5 border rounded-sm px-2 py-1" style={{ color: "var(--color-alert-critical)", borderColor: "var(--color-alert-critical)", background: "var(--color-surface-2)" }}>
                         <Bell size={12} />
-                        <span className="text-[11px] font-bold">{c.alerts} alerts</span>
+                        <span className="text-[11px] font-bold">{c.alerts}<UiText> alerts</UiText></span>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-5 pt-4 border-t border-[var(--color-border-subtle)]">
-                  <span className="text-[11px] text-[var(--color-text-muted)]">Last updated: {c.lastUpdated}</span>
-                  <span className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 group-hover:underline">
-                    Open investigation workspace <ChevronRight size={14} />
+                  <span className="text-[11px] text-[var(--color-text-muted)]"><UiText>Last updated: </UiText>{c.lastUpdated}</span>
+                  <span className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 group-hover:underline"><UiText>
+                    Open investigation workspace </UiText><ChevronRight size={14} />
                   </span>
                 </div>
               </div>
@@ -200,8 +205,8 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
             {/* Investigation Queue */}
             <div className="mt-10">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider">Action Queue</h2>
-                <span className="text-[12px] bg-[var(--color-surface)] border border-[var(--color-border-strong)] px-3 py-1 rounded-sm text-[var(--color-text-secondary)]">{queue.length} pending items</span>
+                <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider"><UiText>Action Queue</UiText></h2>
+                <span className="text-[12px] bg-[var(--color-surface)] border border-[var(--color-border-strong)] px-3 py-1 rounded-sm text-[var(--color-text-secondary)]">{queue.length}<UiText> pending items</UiText></span>
               </div>
               <div className="gov-panel overflow-hidden">
                 <div className="divide-y divide-[var(--color-border-subtle)]">
@@ -227,8 +232,8 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
             {/* Alerts */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider">Intelligence Alerts</h2>
-                <span className="text-[10px] font-bold px-2.5 py-1 rounded-sm border tracking-widest" style={severityStyle("critical")}>{critAlerts.length} CRITICAL</span>
+                <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider"><UiText>Intelligence Alerts</UiText></h2>
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-sm border tracking-widest" style={severityStyle("critical")}>{critAlerts.length}<UiText> CRITICAL</UiText></span>
               </div>
               <div className="space-y-3">
                 {alerts.slice(0, 5).map((a) => (
@@ -244,26 +249,26 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-widest" style={severityStyle(a.severity)}>{a.severity}</span>
-                          <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{a.type}</span>
+                          <span className="text-[10px] text-[var(--color-text-muted)] font-mono"><UiText>{a.type}</UiText></span>
                         </div>
-                        <p className="text-[13px] font-medium text-[var(--color-text-primary)] leading-tight">{a.title}</p>
+                        <p className="text-[13px] font-medium text-[var(--color-text-primary)] leading-tight"><UiText>{a.title}</UiText></p>
 
                         {expandAlert === a.id && (
                           <div className="mt-3 pt-3 border-t border-[var(--color-border-subtle)] space-y-2">
-                            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">{a.description}</p>
+                            <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>{a.description}</UiText></p>
                             <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-3 mt-2">
-                              <p className="text-[11px] text-[var(--color-text-muted)] mb-1">Baseline: <span className="text-[var(--color-text-primary)] font-mono ml-1">{a.normal}</span></p>
-                              <p className="text-[11px] text-[var(--color-alert-critical)] font-medium">Detected: <span className="font-mono ml-1">{a.observed}</span></p>
+                              <p className="text-[11px] text-[var(--color-text-muted)] mb-1"><UiText>Baseline: </UiText><span className="text-[var(--color-text-primary)] font-mono ml-1">{a.normal}</span></p>
+                              <p className="text-[11px] text-[var(--color-alert-critical)] font-medium"><UiText>Detected: </UiText><span className="font-mono ml-1">{a.observed}</span></p>
                             </div>
                             <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-3">
-                              <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1">Rationale</div>
+                              <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1"><UiText>Rationale</UiText></div>
                               <p className="text-[11px] text-[var(--color-text-secondary)]">{a.reason}</p>
                             </div>
                             <button
                               className="btn-premium-outline btn-sm btn-block mt-2"
                               onClick={(e) => { e.stopPropagation(); onNavigate("case-detail", "CASE-2026-017"); }}
-                            >
-                              Analyze in case view <ChevronRight size={12} />
+                            ><UiText>
+                              Analyze in case view </UiText><ChevronRight size={12} />
                             </button>
                           </div>
                         )}
@@ -276,7 +281,7 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
 
             {/* Recent Activity */}
             <div>
-              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider mb-4">Activity Feed</h2>
+              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider mb-4"><UiText>Activity Feed</UiText></h2>
               <div className="gov-panel overflow-hidden">
                 <div className="divide-y divide-[var(--color-border-subtle)]">
                   {recentActivity.map((a, i) => (
@@ -294,7 +299,7 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
 
             {/* Quick links */}
             <div>
-              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider mb-4">Analysis Tools</h2>
+              <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] uppercase tracking-wider mb-4"><UiText>Analysis Tools</UiText></h2>
               <div className="grid grid-cols-2 gap-3">
                 {tools.map((t) => (
                   <button
@@ -305,7 +310,7 @@ export default function Dashboard({ onNavigate, userRole }: Props) {
                     <div className="w-9 h-9 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center">
                       {t.icon}
                     </div>
-                    <span className="text-[12px] font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">{t.label}</span>
+                    <span className="text-[12px] font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors"><UiText>{t.label}</UiText></span>
                   </button>
                 ))}
               </div>

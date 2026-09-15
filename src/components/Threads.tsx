@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-// @ts-expect-error ogl has no TS declarations
 import { Renderer, Program, Mesh, Triangle, Color } from "ogl";
 
 const vertexShader = `

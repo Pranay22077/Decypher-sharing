@@ -1,7 +1,19 @@
-import { useState, useRef, useEffect } from "react";
+import UiText, { useUiTranslation } from "../components/UiText";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, Shield, FileText, CheckCircle, ChevronRight, Upload, Lock, Video, Headphones, Image as ImageIcon, Database, ClipboardList, Brain, Eye, X } from "../components/icons";
 import { evidence, EvidenceItem } from "../data/dummy";
 import { api, appMode, browserSha256 } from "../lib/api";
+
+import { createDocument, listDocuments, deleteDocument, type DemoDocument } from "../lib/documents/store";
+import Scanner from "../components/documents/Scanner";
+import DocumentWorkbench from "../components/documents/DocumentWorkbench";
+import LocalDocumentDetails from "../components/documents/LocalDocumentDetails";
+import { translateUi } from "../context/uiMessages";
+import { useLocale } from "../context/LocaleContext";
+
+function evidenceSummary(record: DemoDocument): EvidenceItem {
+  return { id:record.id, type:record.mime.startsWith("image/")?"image":record.mime.startsWith("video/")?"video":record.mime.startsWith("audio/")?"audio":"document", title:record.name, source:"Browser-local demo intake", date:record.createdAt.slice(0,10), caseId:"CASE-2026-017", size:`${(record.original.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${record.hash}`, uploadedBy:"Showcase visitor", status:"pending", entities:[] };
+}
 
 interface Props { onNavigate: (page: string, param?: string) => void; }
 
@@ -24,6 +36,12 @@ const getTypeIcon = (type: string) => {
 };
 
 export default function EvidencePage({ onNavigate }: Props) {
+  const trUi = useUiTranslation();
+  const { locale } = useLocale(); const l = (en:string,hi:string)=>locale==="hi"?hi:en;
+  const [documents, setDocuments] = useState<DemoDocument[]>([]);
+  const [scanner, setScanner] = useState(appMode === "showcase" && new URLSearchParams(window.location.search).get("tool") === "document");
+  const [editing, setEditing] = useState<string | null>(null);
+  const closeWorkbench = useCallback(() => setEditing(null), []);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
@@ -38,7 +56,11 @@ export default function EvidencePage({ onNavigate }: Props) {
   const [localEvidence, setLocalEvidence] = useState<EvidenceItem[]>(evidence);
   const [loadError, setLoadError] = useState("");
   useEffect(() => {
-    if (appMode !== "full") return;
+    if (appMode !== "full") {
+      let active = true;
+      listDocuments().then(records => { if(active) { setDocuments(records); setLocalEvidence([...records.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(evidenceSummary),...evidence]); } }).catch(cause => { if(active)setLoadError(cause.message); });
+      return () => { active=false; };
+    }
     api.listEvidence().then(items => setLocalEvidence(items.map(saved => ({ id:saved.id, type:saved.type as EvidenceItem["type"], title:saved.name, source:"Secure evidence intake", date:saved.created_at.slice(0,10), caseId:saved.case_id, size:`${(saved.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${saved.sha256}`, uploadedBy:"Authenticated intake", status:saved.status === "analyzed" ? "processed" : "pending", entities:[] })))).catch(cause => { setLocalEvidence([]); setLoadError(cause.message); });
   }, []);
 
@@ -50,9 +72,28 @@ export default function EvidencePage({ onNavigate }: Props) {
 
   const selectedEvidence = localEvidence.find(e => e.id === selected);
 
+  const selectedLocal = documents.find(record=>record.id===selected);
+  const editedDocument = documents.find(record=>record.id===editing);
+  const updateDocument = (record:DemoDocument) => {
+    setDocuments(current=>[record,...current.filter(item=>item.id!==record.id)]);
+    setLocalEvidence(current=>[evidenceSummary(record),...current.filter(item=>item.id!==record.id)]);
+  };
+  const intake = async (file:File) => {
+    setScanner(false); setIsUploading(true); setLoadError("");setUploadComplete(false);setUploadProgress(0);
+    setUploadStep(l("Hashing and saving the original in this browser…","मूल फ़ाइल का हैश बनाकर इस ब्राउज़र में सहेजा जा रहा है…"));
+    try { const record=await createDocument(file); updateDocument(record);setSelected(record.id);setEditing(record.id);setUploadProgress(100);setUploadComplete(true);setUploadStep(l("Original saved locally. Preview and adjust, then choose Run OCR if needed.","मूल फ़ाइल स्थानीय रूप से सहेजी गई। पूर्वावलोकन और सुधार के बाद चाहें तो OCR चलाएँ।")); }
+    catch(cause) { setLoadError(cause instanceof Error?translateUi(cause.message,locale):"Upload failed."); }
+    finally {setIsUploading(false);if(fileInputRef.current)fileInputRef.current.value="";}
+  };
+  const removeLocal = async (id:string) => {
+    try {await deleteDocument(id);setDocuments(current=>current.filter(record=>record.id!==id));setLocalEvidence(current=>current.filter(record=>record.id!==id));setSelected(null);}
+    catch(cause){setLoadError(cause instanceof Error?translateUi(cause.message,locale):"Delete failed.");}
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if(appMode === "showcase") { await intake(file); return; }
 
     if (file.size > 100 * 1024 * 1024) { setLoadError("Evidence must be 100 MB or smaller."); return; }
     setIsUploading(true);
@@ -60,17 +101,12 @@ export default function EvidencePage({ onNavigate }: Props) {
     setUploadProgress(0);
     setUploadStep("Calculating deterministic SHA-256...");
     try {
-      const digest = await browserSha256(file);
+      await browserSha256(file);
       setUploadProgress(35);
-      setUploadStep(appMode === "full" ? "Uploading to MinIO secure storage..." : "Creating a browser-only showcase record...");
-      let newItem: EvidenceItem;
-      if (appMode === "full") {
-        const saved = await api.uploadEvidence("CASE-2026-017", file, "Uploaded during the Operation Nightfall demonstration.");
-        newItem = { id:saved.id, type:saved.type as EvidenceItem["type"], title:saved.name, source:"Secure evidence intake", date:saved.created_at.slice(0,10), caseId:saved.case_id, size:`${(saved.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${saved.sha256}`, uploadedBy:"Current authenticated user", status:"processing", entities:[] };
-      } else {
-        newItem = { id:`LOCAL-${digest.slice(0,8).toUpperCase()}`, type:file.type.includes("image")?"image":file.type.includes("video")?"video":file.type.includes("audio")?"audio":file.type.includes("csv")?"data":"document", title:file.name, source:"Browser showcase intake (not persisted)", date:new Date().toISOString().slice(0,10), caseId:"CASE-2026-017", size:`${(file.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${digest}`, uploadedBy:"Showcase visitor", status:"pending", entities:[] };
-      }
-      setUploadProgress(100); setUploadStep(appMode === "full" ? "Stored and hashed. Open the record to register and analyze it." : "Hash complete. Start the local stack to persist, register and analyze it."); setUploadComplete(true); setLocalEvidence(current=>[newItem,...current]); setSelected(newItem.id);
+      setUploadStep("Uploading to MinIO secure storage...");
+      const saved = await api.uploadEvidence("CASE-2026-017", file, "Uploaded during the Operation Nightfall demonstration.");
+      const newItem: EvidenceItem = { id:saved.id, type:saved.type as EvidenceItem["type"], title:saved.name, source:"Secure evidence intake", date:saved.created_at.slice(0,10), caseId:saved.case_id, size:`${(saved.size/1024/1024).toFixed(2)} MB`, hash:`sha256:${saved.sha256}`, uploadedBy:"Current authenticated user", status:"processing", entities:[] };
+      setUploadProgress(100); setUploadStep("Stored and hashed. Open the record to register and analyze it."); setUploadComplete(true); setLocalEvidence(current=>[newItem,...current]); setSelected(newItem.id);
     } catch (cause) {
       setUploadStep(cause instanceof Error ? cause.message : "Upload failed.");
     } finally {
@@ -83,14 +119,15 @@ export default function EvidencePage({ onNavigate }: Props) {
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-8">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mb-1">Evidence Library</h1>
-            <p className="text-[var(--color-text-secondary)] text-[14px]">CASE-2026-017 · {localEvidence.length} items · {appMode === "full" ? "Persistent secure intake" : "Fictional showcase evidence"}</p>
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] mb-1"><UiText>Evidence Library</UiText></h1>
+            <p className="text-[var(--color-text-secondary)] text-[14px]">CASE-2026-017 · {localEvidence.length}<UiText> items · </UiText><UiText>{appMode === "full" ? "Persistent secure intake" : "Fictional showcase evidence"}</UiText></p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {appMode === "showcase" && <button className="btn-premium-outline" disabled={isUploading} onClick={()=>setScanner(true)}>{l("Scan Document","दस्तावेज़ स्कैन करें")}</button>}
             <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
             <button className="btn-premium" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
               {isUploading ? <Loader className="animate-spin" size={16} /> : <Upload size={16} />}
-              {isUploading ? "Processing..." : "Upload Evidence"}
+              <UiText>{isUploading ? "Processing..." : "Upload Evidence"}</UiText>
             </button>
           </div>
         </div>
@@ -105,7 +142,7 @@ export default function EvidencePage({ onNavigate }: Props) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[14px] flex items-center gap-2">
                 {uploadComplete ? <CheckCircle style={{ color: "var(--color-success)" }} size={16} /> : <Loader className="animate-spin text-[var(--color-primary)]" size={16} />}
-                {uploadComplete ? "Hashing and Intake Complete" : "Processing Evidence"}
+                <UiText>{uploadComplete ? "Hashing and Intake Complete" : "Processing Evidence"}</UiText>
               </h3>
               <span className="text-[12px] font-mono text-[var(--color-text-muted)]">{uploadProgress}%</span>
             </div>
@@ -124,10 +161,10 @@ export default function EvidencePage({ onNavigate }: Props) {
                   <Brain size={16} />
                 </div>
                 <div>
-                  <div className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1">Analysis has not run yet</div>
-                  <div className="text-[11px] text-[var(--color-text-secondary)] mb-2">Open the stored record to register and analyze it. Showcase uploads remain browser-only.</div>
+                  <div className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1"><UiText>{appMode === "full" ? "Analysis has not run yet" : "OCR is optional"}</UiText></div>
+                  <div className="text-[11px] text-[var(--color-text-secondary)] mb-2"><UiText>{appMode === "full" ? "Open the stored record to register and analyze it. Showcase uploads remain browser-only." : "Preview and adjust your document, then select Run OCR. New demo files are stored only in this browser."}</UiText></div>
                 </div>
-                <button className="ml-auto text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors" onClick={() => setUploadComplete(false)}>Dismiss</button>
+                <button className="ml-auto text-[12px] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors" onClick={() => setUploadComplete(false)}><UiText>Dismiss</UiText></button>
               </div>
             )}
           </div>
@@ -139,7 +176,7 @@ export default function EvidencePage({ onNavigate }: Props) {
             <Search size={16} className="text-[var(--color-text-muted)]" />
             <input
               type="text"
-              placeholder="Search evidence..."
+              placeholder={trUi("Search evidence...")}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="flex-1 text-[14px] bg-transparent outline-none text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]"
@@ -152,7 +189,7 @@ export default function EvidencePage({ onNavigate }: Props) {
                 className={`gov-chip capitalize ${typeFilter === t ? "is-active" : ""}`}
                 aria-pressed={typeFilter === t}
                 onClick={() => setTypeFilter(t)}
-              >{t}</button>
+              ><UiText>{t}</UiText></button>
             ))}
           </div>
         </div>
@@ -172,9 +209,9 @@ export default function EvidencePage({ onNavigate }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="font-semibold text-[var(--color-text-primary)] text-[14px]">{ev.title}</h3>
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-wider" style={statusStyle(ev.status)}>{ev.status}</span>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-wider" style={statusStyle(ev.status)}><UiText>{ev.status}</UiText></span>
                     </div>
-                    <p className="text-[12px] text-[var(--color-text-secondary)] mb-1.5">{ev.source} · {ev.date} · {ev.size}</p>
+                    <p className="text-[12px] text-[var(--color-text-secondary)] mb-1.5"><UiText>{ev.source}</UiText> · {ev.date} · {ev.size}</p>
                     <p className="text-[10px] font-mono text-[var(--color-text-muted)] truncate mb-3">{ev.hash}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {ev.entities.slice(0, 5).map(e => (
@@ -183,9 +220,9 @@ export default function EvidencePage({ onNavigate }: Props) {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0 hidden sm:block">
-                    <CheckCircle size={16} className="text-[var(--color-success)] ml-auto mb-2" />
-                    <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider">Uploaded by</div>
-                    <div className="text-[11px] text-[var(--color-text-primary)] font-medium mt-0.5">{ev.uploadedBy}</div>
+                    {!ev.id.startsWith("LOCAL-") && <CheckCircle size={16} className="text-[var(--color-success)] ml-auto mb-2" />}
+                    <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider"><UiText>Uploaded by</UiText></div>
+                    <div className="text-[11px] text-[var(--color-text-primary)] font-medium mt-0.5"><UiText>{ev.uploadedBy}</UiText></div>
                   </div>
                 </div>
               </div>
@@ -194,17 +231,17 @@ export default function EvidencePage({ onNavigate }: Props) {
             {filtered.length === 0 && (
               <div className="gov-panel p-10 text-center">
                 <FileText size={32} className="text-[var(--color-text-muted)] mx-auto mb-3" />
-                <p className="text-[14px] text-[var(--color-text-secondary)]">No evidence matches your search filters.</p>
+                <p className="text-[14px] text-[var(--color-text-secondary)]"><UiText>No evidence matches your search filters.</UiText></p>
               </div>
             )}
           </div>
 
           {/* Detail panel */}
           <div className="space-y-4">
-            {selectedEvidence ? (
+            {selectedLocal ? <LocalDocumentDetails record={selectedLocal} onEdit={()=>setEditing(selectedLocal.id)} onDelete={()=>void removeLocal(selectedLocal.id)} /> : selectedEvidence ? (
               <>
                 <div className="gov-panel p-5">
-                  <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] mb-4 uppercase tracking-wider">Evidence Details</h3>
+                  <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] mb-4 uppercase tracking-wider"><UiText>Evidence Details</UiText></h3>
                   <div className="space-y-3 text-[12px]">
                     {[
                       ["Evidence ID", selectedEvidence.id],
@@ -216,15 +253,15 @@ export default function EvidencePage({ onNavigate }: Props) {
                       ["Case ID", selectedEvidence.caseId],
                     ].map(([k, v]) => (
                       <div key={k} className="flex justify-between gap-3 border-b border-[var(--color-border-subtle)] pb-2 last:border-0 last:pb-0">
-                        <span className="text-[var(--color-text-muted)]">{k}</span>
-                        <span className="font-medium text-[var(--color-text-primary)] text-right">{v}</span>
+                        <span className="text-[var(--color-text-muted)]"><UiText>{k}</UiText></span>
+                        <span className="font-medium text-[var(--color-text-primary)] text-right"><UiText>{v}</UiText></span>
                       </div>
                     ))}
                   </div>
                   <div className="mt-5 p-3 bg-[var(--color-surface-2)] border rounded-sm" style={{ borderColor: "var(--color-success)" }}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <Shield size={14} style={{ color: "var(--color-success)" }} />
-                      <span className="text-[12px] font-semibold" style={{ color: "var(--color-success)" }}>Recorded identity — open record to verify</span>
+                      <span className="text-[12px] font-semibold" style={{ color: "var(--color-success)" }}><UiText>Recorded identity — open record to verify</UiText></span>
                     </div>
                     <p className="text-[10px] font-mono text-[var(--color-text-muted)] break-all">{selectedEvidence.hash}</p>
                   </div>
@@ -240,37 +277,39 @@ export default function EvidencePage({ onNavigate }: Props) {
                     <Lock size={16} />
                   </div>
                   <div>
-                    <div className="text-[13px] font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">View Chain of Custody</div>
-                    <div className="text-[11px] text-[var(--color-text-secondary)] mt-0.5">Integrity and access history</div>
+                    <div className="text-[13px] font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors"><UiText>View Chain of Custody</UiText></div>
+                    <div className="text-[11px] text-[var(--color-text-secondary)] mt-0.5"><UiText>Integrity and access history</UiText></div>
                   </div>
                   <ChevronRight size={14} className="text-[var(--color-text-muted)] ml-auto group-hover:text-[var(--color-primary)] transition-colors" />
                 </button>
 
                 <div className="flex gap-3">
-                  {!selectedEvidence.id.startsWith("LOCAL-") && <button className="btn-premium btn-sm flex-1" onClick={() => onNavigate("evidence-detail", selectedEvidence.id)}>Open Record</button>}
-                  <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("graph")}>View in Graph</button>
-                  <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("timeline")}>View Timeline</button>
+                  {!selectedEvidence.id.startsWith("LOCAL-") && <button className="btn-premium btn-sm flex-1" onClick={() => onNavigate("evidence-detail", selectedEvidence.id)}><UiText>Open Record</UiText></button>}
+                  <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("graph")}><UiText>View in Graph</UiText></button>
+                  <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("timeline")}><UiText>View Timeline</UiText></button>
                 </div>
               </>
             ) : (
               <div className="gov-panel p-8 text-center h-full min-h-[300px] flex flex-col items-center justify-center">
                 <FileText size={32} className="text-[var(--color-text-muted)] mx-auto mb-4" />
-                <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">Select an evidence item from the library to view its details, extracted entities, and verified chain of custody.</p>
+                <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>Select an evidence item from the library to view its details, extracted entities, and verified chain of custody.</UiText></p>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {scanner && <Scanner onClose={()=>setScanner(false)} onCapture={file=>void intake(file)} />}
+      {editedDocument && <DocumentWorkbench key={editedDocument.id} record={editedDocument} onSaved={updateDocument} onClose={closeWorkbench} />}
       {/* Chain of Custody Modal */}
       {showChain && selectedEvidence && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(11,24,45,0.55)" }}>
           <div className="gov-panel w-full max-w-[550px] p-0 overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-2)]">
               <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] flex items-center gap-2 tracking-tight">
-                <Lock size={16} className="text-[var(--color-primary)]" /> Chain of Custody
-              </h2>
-              <button className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors p-1" onClick={() => setShowChain(false)} aria-label="Close">
+                <Lock size={16} className="text-[var(--color-primary)]" /><UiText> Chain of Custody
+              </UiText></h2>
+              <button className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors p-1" onClick={() => setShowChain(false)} aria-label={trUi("Close")}>
                 <X size={18} />
               </button>
             </div>
@@ -290,7 +329,7 @@ export default function EvidencePage({ onNavigate }: Props) {
                     </div>
                     <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-4 ml-2">
                       <div className="text-[13px] font-semibold text-[var(--color-text-primary)] mb-1">{c.action}</div>
-                      <div className="text-[11px] text-[var(--color-text-secondary)] font-medium">By: {c.by}</div>
+                      <div className="text-[11px] text-[var(--color-text-secondary)] font-medium"><UiText>By: </UiText>{c.by}</div>
                       <div className="text-[10px] text-[var(--color-text-muted)] mt-1 font-mono">{c.time}</div>
                     </div>
                   </div>
@@ -300,9 +339,9 @@ export default function EvidencePage({ onNavigate }: Props) {
               <div className="mt-8 p-4 bg-[var(--color-surface-2)] border rounded-sm" style={{ borderColor: "var(--color-success)" }}>
                 <div className="flex items-center gap-2 mb-2">
                   <Shield size={16} style={{ color: "var(--color-success)" }} />
-                  <span className="text-[13px] font-semibold tracking-wide" style={{ color: "var(--color-success)" }}>Evidence Integrity: VERIFIED</span>
+                  <span className="text-[13px] font-semibold tracking-wide" style={{ color: "var(--color-success)" }}><UiText>Evidence Integrity: VERIFIED</UiText></span>
                 </div>
-                <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">Original SHA-256 hash matches the current cryptographic hash. No tampering or modifications detected since initial ingest.</p>
+                <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>Original SHA-256 hash matches the current cryptographic hash. No tampering or modifications detected since initial ingest.</UiText></p>
               </div>
             </div>
           </div>

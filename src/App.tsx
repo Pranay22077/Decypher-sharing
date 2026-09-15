@@ -59,7 +59,7 @@ export default function App() {
     const routes: Record<string, string> = {
       landing: "/", login: "/login", dashboard: "/dashboard", cases: "/cases",
       "case-detail": `/cases/${param || "CASE-2026-017"}`, graph: "/graph", map: "/map",
-      timeline: "/timeline", financial: "/financial", evidence: "/evidence", "evidence-detail": `/evidence/${param || "EV-2026-0001"}`, network: "/network",
+      timeline: "/timeline", financial: "/financial", evidence: "/evidence", "document-tool": "/evidence?tool=document", "evidence-detail": `/evidence/${param || "EV-2026-0001"}`, network: "/network",
       reports: "/reports", demo: "/demo", capabilities: "/capabilities", "how-it-works": "/how-it-works",
       security: "/security", about: "/about", terms: "/terms", privacy: "/privacy",
       person: `/entities/${param || "PERSON-P001"}`,
