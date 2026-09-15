@@ -114,7 +114,7 @@ export default function CopilotWidget({ onNavigate }: Props) {
 
       {/* Chat panel */}
       <div
-        className={`fixed bottom-24 right-6 z-50 w-[380px] h-[550px] max-h-[80vh] flex flex-col gov-panel overflow-hidden transition-all duration-200 origin-bottom-right ${
+        className={`fixed bottom-24 inset-x-4 sm:inset-x-auto sm:right-6 z-50 sm:w-[380px] h-[70vh] sm:h-[550px] max-h-[80vh] flex flex-col gov-panel overflow-hidden transition-all duration-200 origin-bottom-right ${
           isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
         }`}
       >

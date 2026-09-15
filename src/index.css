@@ -311,12 +311,18 @@ textarea:focus-visible,
 /* Timeline structural centre line */
 .timeline-line {
   position: absolute;
-  left: 50%;
+  left: 16px;
   top: 0;
   bottom: 0;
   width: 2px;
   background: var(--color-border-strong);
-  transform: translateX(-50%);
+}
+
+@media (min-width: 640px) {
+  .timeline-line {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 /* Graph tooltip */

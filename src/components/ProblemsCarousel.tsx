@@ -286,7 +286,7 @@ export default function ProblemsCarousel({ onNavigate }: Props) {
                 const current = i === active;
                 return (
                   <div key={s.id} className="w-full flex-shrink-0" aria-hidden={!current}>
-                    <div className="grid md:grid-cols-[1.05fr_0.95fr]">
+                    <div className="grid grid-cols-1 md:grid-cols-[1.05fr_0.95fr]">
                       {/* Text panel */}
                       <div className="bg-[var(--color-primary)] text-white p-8 md:p-10 flex flex-col justify-center min-w-0 order-2 md:order-1">
                         <div className="flex items-center gap-3 mb-4">
@@ -338,14 +338,14 @@ export default function ProblemsCarousel({ onNavigate }: Props) {
               <button
                 onClick={prev}
                 aria-label="Previous challenge"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
+                className="w-10 h-10 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
               >
                 <ChevronRight size={16} className="rotate-180" />
               </button>
               <button
                 onClick={next}
                 aria-label="Next challenge"
-                className="w-8 h-8 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
+                className="w-10 h-10 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
               >
                 <ChevronRight size={16} />
               </button>
@@ -353,7 +353,7 @@ export default function ProblemsCarousel({ onNavigate }: Props) {
                 onClick={() => setPlaying((p) => !p)}
                 aria-pressed={playing}
                 aria-label={playing ? "Pause auto-rotation" : "Resume auto-rotation"}
-                className="w-8 h-8 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
+                className="w-10 h-10 inline-flex items-center justify-center rounded-sm border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] transition-colors"
               >
                 {playing ? <Pause size={15} /> : <Play size={15} />}
               </button>
@@ -370,10 +370,14 @@ export default function ProblemsCarousel({ onNavigate }: Props) {
                   aria-selected={i === active}
                   aria-label={`${s.category} (${i + 1} of ${total})`}
                   onClick={() => go(i)}
-                  className={`h-2 rounded-sm transition-all ${
-                    i === active ? "w-6 bg-[var(--color-primary)]" : "w-2 bg-[var(--color-border-strong)] hover:bg-[var(--color-text-muted)]"
-                  }`}
-                />
+                  className="p-2 -m-2 flex items-center justify-center"
+                >
+                  <span
+                    className={`block h-2 rounded-sm transition-all ${
+                      i === active ? "w-6 bg-[var(--color-primary)]" : "w-2 bg-[var(--color-border-strong)] hover:bg-[var(--color-text-muted)]"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>

@@ -182,7 +182,8 @@ function UtilityBar() {
                 : "border-[var(--color-border-strong)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]"
             }`}
           >
-            <UiText>High Contrast</UiText>
+            <span className="hidden sm:inline"><UiText>High Contrast</UiText></span>
+            <span className="sm:hidden">HC</span>
           </button>
 
           {/* Language */}

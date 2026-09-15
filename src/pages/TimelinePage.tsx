@@ -86,29 +86,31 @@ export default function TimelinePage({ onNavigate }: Props) {
         {error && <p role="alert" className="gov-panel p-4 mb-4">{error}</p>}
         {/* Timeline container */}
         <div className="relative">
-          {/* Vertical spine (solid, institutional) */}
-          <div className="absolute left-[130px] top-4 bottom-4 w-0.5 bg-[var(--color-border-strong)]" />
+          {/* Vertical spine (solid, institutional) — desktop two-column layout only */}
+          <div className="hidden sm:block absolute left-[130px] top-4 bottom-4 w-0.5 bg-[var(--color-border-strong)]" />
 
           <div className="space-y-6">
             {filtered.map((ev) => {
               const cfg = typeConfigs[ev.type] || typeConfigs.report;
               const isExpanded = expanded === ev.id;
               return (
-                <div key={ev.id} className="flex items-start gap-0 group">
-                  {/* Timestamp */}
-                  <div className="w-[115px] text-right pr-5 flex-shrink-0 pt-3">
-                    <div className="text-[12px] font-mono font-bold text-[var(--color-text-primary)]">{ev.timestamp.split(" ")[0]}</div>
-                    <div className="text-[11px] font-mono text-[var(--color-text-muted)]">{ev.timestamp.split(" ")[1] || "00:00"}</div>
-                  </div>
+                <div key={ev.id} className="flex flex-col sm:flex-row sm:items-start gap-0 group">
+                  <div className="flex sm:contents items-center gap-2 mb-1.5 sm:mb-0">
+                    {/* Timestamp */}
+                    <div className="text-left sm:w-[115px] sm:text-right sm:pr-5 flex-shrink-0 sm:pt-3">
+                      <div className="text-[12px] font-mono font-bold text-[var(--color-text-primary)]">{ev.timestamp.split(" ")[0]}</div>
+                      <div className="text-[11px] font-mono text-[var(--color-text-muted)]">{ev.timestamp.split(" ")[1] || "00:00"}</div>
+                    </div>
 
-                  {/* Node dot */}
-                  <div className="relative z-10 flex-shrink-0 pt-3.5">
-                    <div className="w-4 h-4 rounded-full border-2 border-[var(--color-surface)]" style={{ background: cfg.color }} />
+                    {/* Node dot */}
+                    <div className="relative z-10 flex-shrink-0 sm:pt-3.5">
+                      <div className="w-4 h-4 rounded-full border-2 border-[var(--color-surface)]" style={{ background: cfg.color }} />
+                    </div>
                   </div>
 
                   {/* Event card */}
                   <div
-                    className={`ml-5 flex-1 gov-panel p-5 cursor-pointer transition-colors ${isExpanded ? "border-[var(--color-primary)]" : "hover:border-[var(--color-border-strong)]"}`}
+                    className={`ml-0 sm:ml-5 flex-1 gov-panel p-5 cursor-pointer transition-colors ${isExpanded ? "border-[var(--color-primary)]" : "hover:border-[var(--color-border-strong)]"}`}
                     onClick={() => setExpanded((e) => (e === ev.id ? null : ev.id))}
                   >
                     <div className="flex items-start justify-between gap-4">

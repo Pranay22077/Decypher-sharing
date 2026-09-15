@@ -74,8 +74,8 @@ export default function InvestigationGraph({
     return { cx, cy };
   };
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent, nodeId: string) => {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent, nodeId: string) => {
       e.stopPropagation();
       const pos = getPos(nodeId);
       const svgRect = svgRef.current?.getBoundingClientRect();
@@ -88,8 +88,8 @@ export default function InvestigationGraph({
     [pan, scale, positions]
   );
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
       if (dragging) {
         const svgRect = svgRef.current?.getBoundingClientRect();
         if (!svgRect) return;
@@ -106,14 +106,14 @@ export default function InvestigationGraph({
     [dragging, dragOffset, pan, scale]
   );
 
-  const handleSvgMouseDown = (e: React.MouseEvent) => {
+  const handleSvgPointerDown = (e: React.PointerEvent) => {
     if (e.target === svgRef.current || (e.target as Element).tagName === "rect") {
       isPanning.current = true;
       panStart.current = { x: e.clientX, y: e.clientY };
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setDragging(null);
     isPanning.current = false;
   };
@@ -141,7 +141,7 @@ export default function InvestigationGraph({
     "w-8 h-8 bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-primary)] hover:bg-[var(--color-surface-hover)] flex items-center justify-center transition-colors font-bold rounded-sm";
 
   return (
-    <div className="relative bg-[var(--color-base-bg)] overflow-hidden select-none border border-[var(--color-border-subtle)]" style={{ height }}>
+    <div className="relative bg-[var(--color-base-bg)] overflow-hidden select-none border border-[var(--color-border-subtle)]" style={{ height: `clamp(320px, 60vh, ${height}px)` }}>
       {/* Legend */}
       {showLegend && !compact && (
         <div className="absolute top-3 left-3 z-10 bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-sm p-2.5 max-w-[240px]">
@@ -189,11 +189,11 @@ export default function InvestigationGraph({
         ref={svgRef}
         width="100%"
         height="100%"
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseDown={handleSvgMouseDown}
-        style={{ cursor: dragging ? "grabbing" : "grab" }}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onPointerDown={handleSvgPointerDown}
+        style={{ cursor: dragging ? "grabbing" : "grab", touchAction: "none" }}
       >
         <defs>
           {/* Background grid: faint institutional hairline, visible on the light base */}
@@ -279,7 +279,7 @@ export default function InvestigationGraph({
                 key={node.id}
                 transform={`translate(${pos.x},${pos.y})`}
                 style={{ cursor: "pointer", opacity: isDimmed ? 0.2 : 1, transition: "opacity 0.2s" }}
-                onMouseDown={(e) => handleMouseDown(e, node.id)}
+                onPointerDown={(e) => handlePointerDown(e, node.id)}
                 onMouseEnter={(e) => {
                   setHoveredNode(node.id);
                   const svgRect = svgRef.current?.getBoundingClientRect();

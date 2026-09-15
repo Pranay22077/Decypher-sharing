@@ -170,7 +170,7 @@ export default function Landing({ onNavigate }: Props) {
             backgroundSize: "48px 48px",
           }}
         />
-        <div className="relative z-10 max-w-[1400px] mx-auto w-full px-6 lg:px-14 py-14 grid lg:grid-cols-[minmax(0,1fr)_minmax(520px,1.08fr)] gap-10 items-center">
+        <div className="relative z-10 max-w-[1400px] mx-auto w-full px-6 lg:px-14 py-14 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(520px,1.08fr)] gap-10 items-center">
           <div>
             <div className="flex items-center gap-3 mb-5">
               <span className="w-24 h-1 bg-[var(--color-saffron)]" />

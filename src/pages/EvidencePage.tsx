@@ -194,7 +194,7 @@ export default function EvidencePage({ onNavigate }: Props) {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-3">
             {filtered.map(ev => (
               <div
@@ -283,7 +283,7 @@ export default function EvidencePage({ onNavigate }: Props) {
                   <ChevronRight size={14} className="text-[var(--color-text-muted)] ml-auto group-hover:text-[var(--color-primary)] transition-colors" />
                 </button>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   {!selectedEvidence.id.startsWith("LOCAL-") && <button className="btn-premium btn-sm flex-1" onClick={() => onNavigate("evidence-detail", selectedEvidence.id)}><UiText>Open Record</UiText></button>}
                   <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("graph")}><UiText>View in Graph</UiText></button>
                   <button className="btn-premium-outline btn-sm flex-1" onClick={() => onNavigate("timeline")}><UiText>View Timeline</UiText></button>
@@ -303,9 +303,9 @@ export default function EvidencePage({ onNavigate }: Props) {
       {editedDocument && <DocumentWorkbench key={editedDocument.id} record={editedDocument} onSaved={updateDocument} onClose={closeWorkbench} />}
       {/* Chain of Custody Modal */}
       {showChain && selectedEvidence && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(11,24,45,0.55)" }}>
-          <div className="gov-panel w-full max-w-[550px] p-0 overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-2)]">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto" style={{ background: "rgba(11,24,45,0.55)" }}>
+          <div className="gov-panel w-full max-w-[550px] max-h-[90vh] p-0 overflow-hidden flex flex-col my-auto">
+            <div className="flex items-center justify-between p-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-2)] flex-shrink-0">
               <h2 className="font-bold text-[var(--color-text-primary)] text-[16px] flex items-center gap-2 tracking-tight">
                 <Lock size={16} className="text-[var(--color-primary)]" /><UiText> Chain of Custody
               </UiText></h2>
@@ -314,7 +314,7 @@ export default function EvidencePage({ onNavigate }: Props) {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto">
               <div className="relative pl-6 border-l-2 border-[var(--color-border-strong)] space-y-6 pb-2">
                 {[
                   { action: "Evidence Uploaded", by: selectedEvidence.uploadedBy, time: `${selectedEvidence.date} 09:30`, icon: <Upload size={12} /> },

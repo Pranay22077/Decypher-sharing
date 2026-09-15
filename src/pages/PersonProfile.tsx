@@ -92,7 +92,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
 
       <div className="max-w-[1440px] mx-auto px-6 py-8">
         {activeTab === "Overview" && (
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* Identity info */}
               <div className="gov-panel p-6">
@@ -212,9 +212,9 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
           <div className="relative max-w-[760px] mx-auto py-4">
             <div className="timeline-line" />
             {personTimeline.map((ev, i) => (
-              <div key={ev.id} className={`relative flex ${i % 2 === 0 ? "justify-start" : "justify-end"} mb-6`}>
-                <div className="absolute left-1/2 top-4 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-surface)] z-10 bg-[var(--color-primary)]" />
-                <div className={`w-[45%] gov-panel p-4 ${i % 2 === 0 ? "mr-auto" : "ml-auto"}`}>
+              <div key={ev.id} className={`relative flex justify-start ${i % 2 === 0 ? "sm:justify-start" : "sm:justify-end"} mb-6`}>
+                <div className="absolute left-4 sm:left-1/2 top-4 -translate-x-1/2 w-3.5 h-3.5 rounded-full border-2 border-[var(--color-surface)] z-10 bg-[var(--color-primary)]" />
+                <div className={`w-full pl-9 sm:pl-0 sm:w-[45%] gov-panel p-4 ${i % 2 === 0 ? "sm:mr-auto" : "sm:ml-auto"}`}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-[11px] font-mono font-bold text-[var(--color-primary)]">{ev.timestamp}</span>
                     <span

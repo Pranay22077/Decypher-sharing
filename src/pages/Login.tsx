@@ -255,7 +255,7 @@ export default function Login({ onLogin, onNavigate }: Props) {
               <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-3">
                 <UiText>Access Role</UiText>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {roles.map((r) => {
                   const isActive = selectedRole === r.id
                   return (

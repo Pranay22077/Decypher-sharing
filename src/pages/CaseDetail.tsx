@@ -166,7 +166,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
               })}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <div className="glass-card p-3 border border-[var(--color-border-subtle)]">
                   <InvestigationGraph
@@ -247,7 +247,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
 
         {/* ── OVERVIEW TAB ────────────────────────────────────────────── */}
         {activeTab === "overview" && (
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <div className="gov-panel p-6">
                 <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-3"><UiText>Case Brief</UiText></h3>

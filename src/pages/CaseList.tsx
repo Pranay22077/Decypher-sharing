@@ -180,8 +180,8 @@ export default function CaseList({ onNavigate }: Props) {
 
       {/* New Case Modal */}
       {showNewCase && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(11,24,45,0.55)" }}>
-          <div className="gov-panel bg-[var(--color-surface)] border border-[var(--color-border-strong)] w-full max-w-[520px] p-6 relative">
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto" style={{ background: "rgba(11,24,45,0.55)" }}>
+          <div className="gov-panel bg-[var(--color-surface)] border border-[var(--color-border-strong)] w-full max-w-[520px] max-h-[90vh] overflow-y-auto p-6 relative my-auto">
             <button
               onClick={() => setShowNewCase(false)}
               className="absolute top-6 right-6 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"

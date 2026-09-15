@@ -84,8 +84,8 @@ export default function LeafletMap({ height = 440, showConnections = true, locat
   return (
     <div className="overflow-hidden border border-[var(--color-border-strong)] relative" style={{ height }}>
       {/* Stat overlay (derived from data) */}
-      <div className="absolute top-3 right-3 z-[400] pointer-events-none">
-        <div className="px-3.5 py-2 bg-[var(--color-surface)] border border-[var(--color-border-strong)] rounded-sm flex items-center gap-3">
+      <div className="absolute top-3 right-3 left-3 sm:left-auto z-[400] pointer-events-none flex justify-end">
+        <div className="px-3.5 py-2 bg-[var(--color-surface)] border border-[var(--color-border-strong)] rounded-sm flex flex-wrap items-center gap-x-3 gap-y-1 max-w-full">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
             <span className="text-[11px] font-semibold text-[var(--color-text-primary)]">{stats.total} entities tracked</span>

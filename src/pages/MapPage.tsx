@@ -87,7 +87,7 @@ export default function MapPage({ onNavigate }: Props) {
             {error}
           </p>
         )}
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <div className="gov-panel p-2 relative">
               <LeafletMap
