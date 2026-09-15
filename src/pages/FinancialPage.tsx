@@ -8,11 +8,11 @@ interface Props {
 
 // Fund-flow topology (data-driven so it can be traced interactively).
 const flowNodes = [
-  { id: "A2", x: 70, y: 110, label: "ACCT-A2", sub: "Person-A (Origin)", tone: "var(--color-primary)" },
-  { id: "B1", x: 250, y: 65, label: "ACCT-B1", sub: "Person-B", tone: "var(--entity-account)" },
-  { id: "F1", x: 250, y: 155, label: "ACCT-F1", sub: "Person-F", tone: "var(--entity-account)" },
+  { id: "A2", x: 70, y: 110, label: "ACCT-A2", sub: "Raj Mehta (Origin)", tone: "var(--color-primary)" },
+  { id: "B1", x: 250, y: 65, label: "ACCT-B1", sub: "Arjun Verma", tone: "var(--entity-account)" },
+  { id: "F1", x: 250, y: 155, label: "ACCT-F1", sub: "Vikram Singh", tone: "var(--entity-account)" },
   { id: "ORG", x: 460, y: 65, label: "ORG-042 Acct", sub: "Shell Company", tone: "var(--entity-org)" },
-  { id: "D2", x: 460, y: 155, label: "ACCT-D2", sub: "Person-D", tone: "var(--entity-account)" },
+  { id: "D2", x: 460, y: 155, label: "ACCT-D2", sub: "Vikram Singh", tone: "var(--entity-account)" },
   { id: "X3", x: 660, y: 110, label: "ACCT-X3", sub: "Offshore Term.", tone: "var(--color-alert-critical)" },
 ];
 

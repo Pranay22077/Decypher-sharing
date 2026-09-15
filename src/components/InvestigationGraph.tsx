@@ -3,7 +3,7 @@ import { GraphNode, GraphEdge, graphNodes, graphEdges } from "../data/dummy";
 import { entityColor, entityBadge, PALETTE } from "../theme";
 
 // Fixed legend order so a filter change never reshuffles identity.
-const TYPE_ORDER = ["person", "org", "phone", "vehicle", "location", "account", "case", "event"];
+const TYPE_ORDER: GraphNode["type"][] = ["person", "org", "phone", "vehicle", "location", "account", "case", "event"];
 const TYPE_LABEL: Record<string, string> = {
   person: "Person",
   org: "Organization",
@@ -195,6 +195,9 @@ export default function InvestigationGraph({
           <pattern id="graph-grid" width="40" height="40" patternUnits="userSpaceOnUse">
             <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c9d2dc" strokeWidth="1" />
           </pattern>
+          <marker id="neo-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--color-border-strong)" />
+          </marker>
         </defs>
 
         {/* Background */}
@@ -224,7 +227,7 @@ export default function InvestigationGraph({
                   onMouseEnter={(e) => {
                     setHoveredEdge(edge.id);
                     const svgRect = svgRef.current?.getBoundingClientRect();
-                    if (svgRect) setTooltip({ x: e.clientX - svgRect.left, y: e.clientY - svgRect.top, content: edge.label });
+                    if (svgRect) setTooltip({ x: e.clientX - svgRect.left, y: e.clientY - svgRect.top, content: `${edge.label} · ${Math.round((edge.confidence ?? .85) * 100)}% · ${(edge.evidenceIds || []).join(", ") || "source pending"}` });
                   }}
                   onMouseLeave={() => {
                     setHoveredEdge(null);
@@ -238,6 +241,7 @@ export default function InvestigationGraph({
                   stroke={color}
                   strokeWidth={isHovered || isConnected ? 2.2 : 1.3}
                   strokeOpacity={opacity}
+                  markerEnd="url(#neo-arrow)"
                   style={{ transition: "stroke-opacity 0.2s" }}
                 />
                 {/* Edge label on hover */}
@@ -319,6 +323,9 @@ export default function InvestigationGraph({
                 >
                   {node.label.split("\n")[0]}
                 </text>
+                <text y={r + 25} textAnchor="middle" fill="var(--color-text-muted)" fontSize="7" fontFamily="var(--font-mono)" style={{ pointerEvents: "none" }}>
+                  {node.id}
+                </text>
 
                 {/* "PRIMARY" badge */}
                 {node.highlighted && (
@@ -339,7 +346,7 @@ export default function InvestigationGraph({
           <g transform="translate(16, 16)">
             <rect x="0" y={height - 85} width="240" height="64" rx="2" fill="var(--color-surface)" stroke="var(--color-border-subtle)" strokeWidth="1" />
             <text x="12" y={height - 63} fill="var(--color-text-primary)" fontSize="9.5" fontWeight="700">
-              CASE-2026-017 / OPERATION INDRA NET
+              CASE-2026-017 / OPERATION NIGHTFALL
             </text>
             <text x="12" y={height - 49} fill="var(--color-primary)" fontSize="8.5" fontWeight="600">
               {visibleNodes.length} entities · {visibleEdges.length} relationships

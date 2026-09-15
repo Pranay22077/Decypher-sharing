@@ -1,0 +1,5 @@
+record_id,caller,receiver,start_time,duration_seconds,tower_location,source_note
+CDR-001,+919810001101,+919810001202,2026-09-10T20:42:00+05:30,186,Connaught Place,"Fictional demo record: Raj Mehta to Arjun Verma"
+CDR-002,+919810001202,+919810001101,2026-09-10T21:03:00+05:30,42,Gurugram,"Fictional demo record: Arjun Verma to Raj Mehta"
+CDR-003,+919810001202,+919810001404,2026-09-10T21:48:00+05:30,77,Noida Sector 62,"Fictional demo record: Arjun Verma to Vikram Singh"
+

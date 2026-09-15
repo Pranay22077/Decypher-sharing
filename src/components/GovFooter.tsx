@@ -30,13 +30,13 @@ export default function GovFooter({ onNavigate }: Props) {
           <div className="flex items-center gap-3 mb-3">
             <StateEmblem size={40} className="text-[var(--color-primary)]" />
             <div>
-              <div className="font-semibold text-[var(--color-text-primary)] text-[14px] leading-tight">Decypher</div>
+              <div className="font-semibold text-[var(--color-text-primary)] text-[14px] leading-tight">Decypher by Epoch</div>
               <div className="text-[11px] text-[var(--color-text-muted)] leading-tight">Criminal Network Intelligence</div>
             </div>
           </div>
           <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-            A platform of the Ministry of Home Affairs for authorised investigation of criminal networks. Access is
-            restricted to verified personnel.
+            A fictional evidence-intelligence prototype designed for authorised investigative workflows. Access is
+            restricted to demo personnel.
           </p>
         </div>
 
@@ -67,10 +67,7 @@ export default function GovFooter({ onNavigate }: Props) {
         <div>
           <h3 className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-primary)] mb-3">Governance</h3>
           <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed">
-            Content managed by the Ministry of Home Affairs, Government of India.
-          </p>
-          <p className="text-[12px] text-[var(--color-text-secondary)] leading-relaxed mt-3">
-            Designed, developed and hosted by the National Informatics Centre (NIC).
+            Demonstration interface inspired by Indian public-sector accessibility and evidence-management requirements.
           </p>
           <p className="text-[12px] text-[var(--color-text-muted)] mt-3">Last updated: September 2026</p>
         </div>
@@ -79,7 +76,7 @@ export default function GovFooter({ onNavigate }: Props) {
       {/* Sub-bar */}
       <div className="bg-[var(--color-primary)] text-white/90">
         <div className="max-w-[1440px] mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-[12px]">© 2026 Government of India. All rights reserved.</p>
+          <p className="text-[12px]">© 2026 Decypher by Epoch. Prototype demonstration.</p>
           <p className="text-[11px] text-white/70">
             This is a demonstration environment. Data shown is illustrative and does not represent real records.
           </p>

@@ -1,0 +1,4 @@
+transaction_id,timestamp,from_entity,to_account,amount_inr,channel,source_note
+TXN-001,2026-09-10T22:04:00+05:30,Arjun Verma,4821,245000,NEFT,"Fictional Cooperative Bank synthetic export"
+TXN-002,2026-09-11T07:32:00+05:30,Neha Kapoor,4821,48000,UPI,"Fictional Cooperative Bank synthetic export"
+

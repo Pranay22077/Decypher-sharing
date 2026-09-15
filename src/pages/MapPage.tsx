@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, ChevronRight, LocateFixed } from "../components/icons";
 import LeafletMap from "../components/LeafletMap";
 import { mapLocations } from "../data/dummy";
+import { api, appMode } from "../lib/api";
+import { useLocale } from "../context/LocaleContext";
 
-interface Props { onNavigate: (page: string) => void; }
+interface Props { onNavigate: (page: string, param?:string) => void; }
 
 // Match LeafletMap MARKER_COLORS: primary->primary, secondary->accent, alert->critical, peripheral->muted.
 function locColor(type: string): string {
@@ -15,15 +17,17 @@ function locColor(type: string): string {
 
 export default function MapPage({ onNavigate }: Props) {
   const [filter, setFilter] = useState("all");
+  const { locale } = useLocale(); const [locations,setLocations] = useState(mapLocations); const [error,setError] = useState("");
+  useEffect(() => {if(appMode !== "full") return;api.map("CASE-2026-017").then(rows => setLocations(rows.map(row => ({id:row.eventId,name:row.location.name,lat:row.location.lat,lng:row.location.lng,type:"primary",entity:row.entityIds[0],description:`${row.title} · ${row.evidenceIds.join(", ")}`})))).catch(e => {setLocations([]);setError(e.message);});},[]);
 
-  const filteredLocations = mapLocations.filter(l => filter === "all" || l.type === filter);
+  const filteredLocations = locations.filter(l => filter === "all" || l.type === filter);
 
   return (
     <div className="min-h-screen bg-[var(--color-base-bg)] text-[var(--color-text-primary)]">
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-[var(--color-text-primary)] text-xl font-bold tracking-tight">Geospatial Intelligence</h1>
+            <h1 className="text-[var(--color-text-primary)] text-xl font-bold tracking-tight">{locale === "hi" ? "भौगोलिक जाँच" : "Geospatial Intelligence"}</h1>
             <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">Location analysis · Entity distribution · Movement patterns</p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -40,10 +44,11 @@ export default function MapPage({ onNavigate }: Props) {
       </div>
 
       <div className="max-w-[1440px] mx-auto px-6 py-6">
+        {error && <p role="alert" className="gov-panel p-4 mb-4">{error}</p>}
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <div className="gov-panel p-2 relative">
-              <LeafletMap height={600} showConnections={true} />
+              <LeafletMap height={600} showConnections={appMode !== "full"} locations={filteredLocations} />
               <div className="absolute top-4 left-14 z-[400] bg-[var(--color-surface)] border border-[var(--color-border-strong)] rounded-sm px-3 py-1.5 flex items-center gap-2 pointer-events-none">
                 <LocateFixed size={14} className="text-[var(--color-primary)]" />
                 <span className="text-[11px] font-medium text-[var(--color-text-primary)]">Restricted: India Region</span>
@@ -61,7 +66,7 @@ export default function MapPage({ onNavigate }: Props) {
             </div>
 
             {filteredLocations.map(loc => (
-              <div key={loc.id} className="gov-panel p-4 cursor-pointer group hover:border-[var(--color-primary)] transition-colors">
+              <div key={loc.id} className="gov-panel p-4 group hover:border-[var(--color-primary)] transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-[var(--color-surface-2)] rounded-sm border border-[var(--color-border-subtle)] flex-shrink-0">
                     <MapPin size={16} style={{ color: locColor(loc.type) }} />
@@ -70,6 +75,7 @@ export default function MapPage({ onNavigate }: Props) {
                     <div className="font-bold text-[13px] text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors mb-0.5">{loc.name}</div>
                     <div className="text-[10px] font-mono text-[var(--color-text-muted)] mb-2">{loc.id}</div>
                     <div className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">{loc.description}</div>
+                    <button className="text-xs underline mt-2" onClick={() => {const cited = loc.description.match(/EV-2026-\d+/)?.[0];onNavigate(cited ? "evidence-detail" : "evidence",cited);}}>Open supporting evidence</button>
                     <div className="mt-3 flex items-center gap-1.5">
                       <span className="text-[9px] text-[var(--color-text-muted)] uppercase tracking-widest">Entity:</span>
                       <span

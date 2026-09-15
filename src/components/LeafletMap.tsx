@@ -39,32 +39,29 @@ function createColoredIcon(color: string) {
 
 // Inter-city links. Alert routes carry the critical tone; the rest are steel-blue.
 const CONNECTIONS: { from: [number, number]; to: [number, number]; color: string; weight: number; opacity: number; dash: string }[] = [
-  { from: [28.6139, 77.209], to: [19.076, 72.8777], color: PALETTE.accent, weight: 2, opacity: 0.85, dash: "6,6" },
-  { from: [28.6139, 77.209], to: [26.9124, 75.7873], color: PALETTE.accent, weight: 1.8, opacity: 0.75, dash: "6,6" },
-  { from: [19.076, 72.8777], to: [12.9716, 77.5946], color: PALETTE.borderStrong, weight: 1.5, opacity: 0.6, dash: "6,6" },
-  { from: [26.9124, 75.7873], to: [19.076, 72.8777], color: PALETTE.critical, weight: 2, opacity: 0.85, dash: "6,6" },
-  { from: [28.6139, 77.209], to: [22.5726, 88.3639], color: PALETTE.primary, weight: 1.6, opacity: 0.7, dash: "6,6" },
-  { from: [19.076, 72.8777], to: [18.5204, 73.8567], color: PALETTE.accent, weight: 1.5, opacity: 0.65, dash: "4,4" },
-  { from: [17.385, 78.4867], to: [12.9716, 77.5946], color: PALETTE.critical, weight: 1.6, opacity: 0.75, dash: "6,6" },
-  { from: [28.6139, 77.209], to: [26.8467, 80.9462], color: PALETTE.primary, weight: 1.5, opacity: 0.6, dash: "5,5" },
+  { from: [28.6315, 77.2167], to: [28.4595, 77.0266], color: PALETTE.accent, weight: 2, opacity: 0.85, dash: "6,6" },
+  { from: [28.4595, 77.0266], to: [28.6270, 77.3723], color: PALETTE.critical, weight: 2, opacity: 0.85, dash: "6,6" },
+  { from: [28.6315, 77.2167], to: [28.6129, 77.2295], color: PALETTE.borderStrong, weight: 1.5, opacity: 0.65, dash: "4,4" },
 ];
 
 interface Props {
   height?: number;
   showConnections?: boolean;
+  locations?: typeof mapLocations;
 }
 
-export default function LeafletMap({ height = 440, showConnections = true }: Props) {
-  const center: [number, number] = [22.5, 79.0]; // Center of India
+export default function LeafletMap({ height = 440, showConnections = true, locations = mapLocations }: Props) {
+  const center: [number, number] = [28.58, 77.20]; // Operation Nightfall, Delhi NCR
   const indiaBounds: L.LatLngBoundsExpression = [
     [6.5, 68.0],
     [35.5, 97.5],
   ];
 
-  const presentTypes = useMemo(() => MARKER_ORDER.filter((t) => mapLocations.some((l) => l.type === t)), []);
-  const [activeTypes, setActiveTypes] = useState<Set<string>>(() => new Set(presentTypes));
+  const presentTypes = useMemo(() => MARKER_ORDER.filter((t) => locations.some((l) => l.type === t)), [locations]);
+  const [activeTypes, setActiveTypes] = useState<Set<string>>(() => new Set(MARKER_ORDER));
   const [showConn, setShowConn] = useState(showConnections);
   const [showFences, setShowFences] = useState(true);
+  const [tileError, setTileError] = useState(false);
 
   const toggleType = (t: string) =>
     setActiveTypes((prev) => {
@@ -74,14 +71,14 @@ export default function LeafletMap({ height = 440, showConnections = true }: Pro
       return next;
     });
 
-  const visibleLocations = mapLocations.filter((l) => activeTypes.has(l.type));
+  const visibleLocations = locations.filter((l) => activeTypes.has(l.type));
   const stats = useMemo(
     () => ({
-      total: mapLocations.length,
-      alerts: mapLocations.filter((l) => l.type === "alert").length,
-      primary: mapLocations.filter((l) => l.type === "primary").length,
+      total: locations.length,
+      alerts: locations.filter((l) => l.type === "alert").length,
+      primary: locations.filter((l) => l.type === "primary").length,
     }),
-    []
+    [locations]
   );
 
   return (
@@ -140,7 +137,7 @@ export default function LeafletMap({ height = 440, showConnections = true }: Pro
 
       <MapContainer
         center={center}
-        zoom={5}
+        zoom={9}
         maxBounds={indiaBounds}
         maxBoundsViscosity={1.0}
         minZoom={5}
@@ -148,8 +145,9 @@ export default function LeafletMap({ height = 440, showConnections = true }: Pro
         scrollWheelZoom={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          eventHandlers={{ tileerror: () => setTileError(true), load: () => setTileError(false) }}
         />
 
         {/* Connection lines */}
@@ -160,7 +158,7 @@ export default function LeafletMap({ height = 440, showConnections = true }: Pro
 
         {/* Markers */}
         {visibleLocations.map((loc) => (
-          <Marker key={loc.id} position={[loc.lat, loc.lng]} icon={createColoredIcon(MARKER_COLORS[loc.type] || PALETTE.textMuted)}>
+          <Marker key={loc.id} title={loc.name} alt={loc.name} position={[loc.lat, loc.lng]} icon={createColoredIcon(MARKER_COLORS[loc.type] || PALETTE.textMuted)}>
             <Tooltip permanent direction="top" offset={[0, -8]} className="cypher-map-tooltip">
               <div className="flex items-center gap-1 font-mono text-[10px]">
                 <span className="font-bold">{loc.name}</span>
@@ -192,6 +190,7 @@ export default function LeafletMap({ height = 440, showConnections = true }: Pro
               />
             ))}
       </MapContainer>
+      {tileError && <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[500] bg-[var(--color-surface)] border border-[var(--color-alert-medium)] px-3 py-2 text-[11px] text-[var(--color-text-secondary)]">Map tiles are unavailable. Seeded location evidence remains available in the location list.</div>}
     </div>
   );
 }

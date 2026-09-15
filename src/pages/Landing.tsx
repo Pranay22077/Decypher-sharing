@@ -11,12 +11,12 @@ interface Props { onNavigate: (page: string) => void; }
 // entity identity carried by colour + label; no glow, no rainbow.
 function NetworkShowcase() {
   const nodes = [
-    { id: "A", x: 340, y: 180, type: "person", label: "Person-A", primary: true },
-    { id: "B", x: 180, y: 100, type: "person", label: "Person-B" },
-    { id: "C", x: 100, y: 220, type: "person", label: "Person-C" },
-    { id: "D", x: 490, y: 100, type: "person", label: "Person-D" },
+    { id: "A", x: 340, y: 180, type: "person", label: "Raj Mehta", primary: true },
+    { id: "B", x: 180, y: 100, type: "person", label: "Arjun Verma" },
+    { id: "C", x: 100, y: 220, type: "person", label: "Neha Kapoor" },
+    { id: "D", x: 490, y: 100, type: "person", label: "Vikram Singh" },
     { id: "E", x: 560, y: 240, type: "person", label: "Person-E" },
-    { id: "F", x: 240, y: 290, type: "person", label: "Person-F" },
+    { id: "F", x: 240, y: 290, type: "person", label: "Vikram Singh" },
     { id: "O1", x: 220, y: 190, type: "org", label: "ORG-042" },
     { id: "O2", x: 460, y: 200, type: "org", label: "ORG-007" },
     { id: "Ph1", x: 380, y: 80, type: "phone", label: "PHONE-9810" },
@@ -213,7 +213,7 @@ export default function Landing({ onNavigate }: Props) {
                 <span className="flag-green" />
               </span>
               <span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--color-accent)]">
-                Ministry of Home Affairs · Intelligence Platform
+                Decypher by Epoch · Fictional intelligence prototype
               </span>
             </div>
 

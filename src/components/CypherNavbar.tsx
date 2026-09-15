@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Shield, Menu, X } from "./icons";
 import StateEmblem from "./StateEmblem";
+import { useLocale } from "../context/LocaleContext";
 
 interface CypherNavbarProps {
   currentPage: string;
@@ -45,12 +46,12 @@ const TEXT_LEVELS = [
 ];
 
 function UtilityBar() {
+  const { locale: lang, setLocale: setLang, t } = useLocale();
   const [level, setLevel] = useState<number>(() => {
     const v = localStorage.getItem("ui.textLevel");
     return v != null ? Number(v) : 1;
   });
   const [contrast, setContrast] = useState<boolean>(() => localStorage.getItem("ui.contrast") === "1");
-  const [lang, setLang] = useState<"en" | "hi">(() => (localStorage.getItem("ui.lang") === "hi" ? "hi" : "en"));
 
   useEffect(() => {
     const scale = TEXT_LEVELS[level]?.scale ?? 1;
@@ -63,13 +64,8 @@ function UtilityBar() {
     localStorage.setItem("ui.contrast", contrast ? "1" : "0");
   }, [contrast]);
 
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    localStorage.setItem("ui.lang", lang);
-  }, [lang]);
-
-  const govName = lang === "hi" ? "भारत सरकार" : "Government of India";
-  const ministry = lang === "hi" ? "गृह मंत्रालय" : "Ministry of Home Affairs";
+  const govName = lang === "hi" ? "डिसाइफ़र बाय एपॉक" : "Decypher by Epoch";
+  const ministry = lang === "hi" ? "काल्पनिक जाँच प्रदर्शन" : "Fictional investigation prototype";
 
   const segBtn = (active: boolean) =>
     `px-2 py-1 transition-colors ${
@@ -90,7 +86,7 @@ function UtilityBar() {
         </div>
 
         <div className="flex items-center gap-1.5 text-[12px]">
-          <span className="hidden md:inline text-[var(--color-text-muted)] mr-0.5">Accessibility</span>
+          <span className="hidden md:inline text-[var(--color-text-muted)] mr-0.5">{t("accessibility")}</span>
 
           {/* Text size */}
           <div className="flex items-center border border-[var(--color-border-strong)] rounded-sm overflow-hidden" role="group" aria-label="Text size">
@@ -140,23 +136,25 @@ function UtilityBar() {
 // ─── MAIN NAV ────────────────────────────────────────────────────────────────
 export default function CypherNavbar({ currentPage, onNavigate, isLoggedIn, onLogout, userRole }: CypherNavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useLocale();
 
   const landingNavItems = [
-    { id: "landing", label: "Home" },
-    { id: "capabilities", label: "Capabilities" },
-    { id: "how-it-works", label: "How It Works" },
-    { id: "security", label: "Security" },
-    { id: "about", label: "About" },
+    { id: "landing", label: t("home") },
+    { id: "capabilities", label: t("capabilities") },
+    { id: "how-it-works", label: t("how") },
+    { id: "security", label: t("security") },
+    { id: "about", label: t("about") },
   ];
 
   const appNavItems = [
-    { id: "dashboard", label: "Command Center" },
-    { id: "cases", label: "Cases" },
-    { id: "graph", label: "Investigation Graph" },
-    { id: "map", label: "Geo Intelligence" },
-    { id: "timeline", label: "Timeline" },
-    { id: "financial", label: "Financial" },
-    { id: "evidence", label: "Evidence" },
+    { id: "dashboard", label: t("dashboard") },
+    { id: "cases", label: t("cases") },
+    { id: "graph", label: t("graph") },
+    { id: "timeline", label: t("timeline") },
+    { id: "map", label: t("map") },
+    { id: "evidence", label: t("evidence") },
+    { id: "network", label: t("network") },
+    { id: "reports", label: t("reports") },
   ];
 
   const navItems = isLoggedIn ? appNavItems : landingNavItems;
@@ -187,7 +185,7 @@ export default function CypherNavbar({ currentPage, onNavigate, isLoggedIn, onLo
           >
             <img src="/copy.png" alt="Decypher" className="w-11 h-11 object-contain" />
             <div className="hidden sm:block text-left border-l-2 border-[var(--color-border-strong)] pl-3">
-              <div className="font-bold text-[var(--color-primary)] text-[19px] leading-tight tracking-tight">Decypher</div>
+              <div className="font-bold text-[var(--color-primary)] text-[19px] leading-tight tracking-tight">Decypher <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">by Epoch</span></div>
               <div className="text-[10.5px] text-[var(--color-text-secondary)] leading-tight font-semibold tracking-wide uppercase">
                 Criminal Network Intelligence
               </div>
@@ -229,13 +227,13 @@ export default function CypherNavbar({ currentPage, onNavigate, isLoggedIn, onLo
                   </div>
                 </div>
                 <button className="btn-premium-outline btn-sm" onClick={onLogout}>
-                  Sign Out
+                  {t("logout")}
                 </button>
               </div>
             ) : (
               <button className="btn-premium btn-sm" onClick={() => onNavigate("login")}>
                 <Shield size={14} />
-                Authorized Login
+                {t("login")}
               </button>
             )}
 

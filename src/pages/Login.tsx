@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Shield, Eye, EyeOff, Lock, AlertTriangle, ArrowRight } from "../components/icons";
 import { DecypherLogo } from "../components/CypherNavbar";
+import { appMode, login as apiLogin } from "../lib/api";
+import { useLocale } from "../context/LocaleContext";
 
 type Role = "investigator" | "senior" | "forensics" | "admin";
 
@@ -16,7 +18,16 @@ const roles: { id: Role; label: string; desc: string; color: string }[] = [
   { id: "admin", label: "System Admin", desc: "Platform administration", color: "var(--color-alert-critical)" },
 ];
 
+const demoAccounts: Record<Role, string> = {
+  investigator: "investigator@decypher.example",
+  senior: "supervisor@decypher.example",
+  forensics: "forensics@decypher.example",
+  admin: "admin@decypher.example",
+};
+const DEMO_PASSWORD = "DemoAccess2026!";
+
 export default function Login({ onLogin, onNavigate }: Props) {
+  const { locale } = useLocale();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -24,22 +35,38 @@ export default function Login({ onLogin, onNavigate }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const id = userId.trim();
     if (!id || !password.trim()) {
-      setError("Enter your Gmail address and password.");
+      setError(locale === "hi" ? "ईमेल पता और पासवर्ड दर्ज करें।" : "Enter your demo email address and password.");
       return;
     }
-    if (!/^[^\s@]+@gmail\.com$/i.test(id)) {
-      setError("Use a valid @gmail.com address for demo access.");
+    if (!/^[^\s@]+@[^\s@]+$/i.test(id)) {
+      setError(locale === "hi" ? "मान्य ईमेल पता दर्ज करें।" : "Enter a valid email address.");
       return;
     }
     setLoading(true);
     setError("");
-    setTimeout(() => {
+    try {
+      if (appMode === "full") {
+        const user = await apiLogin(id, password);
+        onLogin((user.role as Role) || selectedRole);
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        onLogin(selectedRole);
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Authentication failed.");
+    } finally {
       setLoading(false);
-      onLogin(selectedRole);
-    }, 1200);
+    }
+  };
+
+  const quickFill = (role: Role) => {
+    setSelectedRole(role);
+    setUserId(demoAccounts[role]);
+    setPassword(DEMO_PASSWORD);
+    setError("");
   };
 
   return (
@@ -65,7 +92,7 @@ export default function Login({ onLogin, onNavigate }: Props) {
           <button onClick={() => onNavigate("landing")} className="flex items-center gap-3 mb-12 group">
             <DecypherLogo size="lg" />
             <div className="text-left">
-              <div className="font-bold text-[var(--color-text-primary)] text-2xl tracking-tight group-hover:text-[var(--color-primary)] transition-colors">Decypher</div>
+              <div className="font-bold text-[var(--color-text-primary)] text-2xl tracking-tight group-hover:text-[var(--color-primary)] transition-colors">Decypher <span className="text-sm font-medium">by Epoch</span></div>
             </div>
           </button>
 
@@ -85,7 +112,7 @@ export default function Login({ onLogin, onNavigate }: Props) {
               <Shield className="text-[var(--color-primary)]" size={24} />
               <div>
                 <div className="text-[var(--color-text-primary)] font-semibold text-sm">Authorized Access Only</div>
-                <div className="text-[var(--color-text-muted)] text-xs mt-0.5">Government of India secure node</div>
+                <div className="text-[var(--color-text-muted)] text-xs mt-0.5">Fictional prototype · not an official service</div>
               </div>
             </div>
             <div className="flex items-center gap-6 mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
@@ -113,8 +140,8 @@ export default function Login({ onLogin, onNavigate }: Props) {
 
         <div className="w-full max-w-[440px]">
           <div className="text-center lg:text-left mb-8">
-            <h2 className="text-[var(--color-text-primary)] font-bold text-3xl tracking-tight mb-2">Sign In</h2>
-            <p className="text-[var(--color-text-secondary)] text-sm">Access the Decypher intelligence platform.</p>
+            <h2 className="text-[var(--color-text-primary)] font-bold text-3xl tracking-tight mb-2">{locale === "hi" ? "साइन इन करें" : "Sign In"}</h2>
+            <p className="text-[var(--color-text-secondary)] text-sm">{locale === "hi" ? "Decypher by Epoch जाँच प्लेटफ़ॉर्म खोलें।" : "Access the Decypher by Epoch investigation platform."}</p>
           </div>
 
           <div className="gov-panel p-8">
@@ -143,6 +170,7 @@ export default function Login({ onLogin, onNavigate }: Props) {
                           : "border-[var(--color-border-strong)] hover:border-[var(--color-text-secondary)] bg-[var(--color-surface)]"
                       }`}
                       onClick={() => setSelectedRole(r.id)}
+                      onDoubleClick={() => quickFill(r.id)}
                       aria-pressed={isActive}
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -158,14 +186,14 @@ export default function Login({ onLogin, onNavigate }: Props) {
 
             {/* Gmail address */}
             <div className="mb-5">
-              <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Gmail Address</label>
+              <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-2">Email Address</label>
               <input
                 type="email"
                 inputMode="email"
                 autoComplete="username"
                 value={userId}
                 onChange={e => setUserId(e.target.value)}
-                placeholder="yourname@gmail.com"
+                placeholder="investigator@decypher.example"
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 className="w-full bg-[var(--color-surface)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-3 text-[14px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors"
               />
@@ -213,9 +241,14 @@ export default function Login({ onLogin, onNavigate }: Props) {
               )}
             </button>
 
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <button className="btn-ghost btn-sm border border-[var(--color-border-subtle)]" onClick={() => quickFill("investigator")}>Quick-fill Investigator</button>
+              <button className="btn-ghost btn-sm border border-[var(--color-border-subtle)]" onClick={() => quickFill("admin")}>Quick-fill Admin</button>
+            </div>
+
             <div className="mt-6 pt-6 border-t border-[var(--color-border-subtle)]">
               <p className="text-[11px] text-[var(--color-text-muted)] text-center leading-relaxed">
-                <span className="text-[var(--color-primary)] font-medium">Demo Access:</span> Sign in with any @gmail.com address and any password.
+                <span className="text-[var(--color-primary)] font-medium">Demo Access:</span> {appMode === "full" ? "Use a quick-fill account. All passwords are DemoAccess2026!." : "Any valid email and password work in public showcase mode."}
               </p>
             </div>
           </div>
