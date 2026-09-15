@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { useState } from "react";
 import {
   ChevronRight, Phone, Car, MapPin, FileText, AlertTriangle,
@@ -34,7 +35,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-base-bg)] text-[var(--color-text-primary)]">
+    <div className="min-h-full bg-[var(--color-base-bg)] text-[var(--color-text-primary)]">
       {/* Header */}
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto">
@@ -52,26 +53,26 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
               <div>
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                   <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={riskStyle(person.risk)}>
-                    {person.risk} Risk Indicator
-                  </span>
+                    {person.risk}<UiText> Risk Indicator
+                  </UiText></span>
                   <span className="text-[11px] text-[var(--color-text-muted)] font-mono">{person.id}</span>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{person.name}</h1>
                 <p className="text-[var(--color-primary)] text-[14px] font-medium mt-0.5">{person.role}</p>
-                {person.alias.length > 0 && <p className="text-[12px] text-[var(--color-text-muted)] mt-1">Aliases: {person.alias.join(", ")}</p>}
+                {person.alias.length > 0 && <p className="text-[12px] text-[var(--color-text-muted)] mt-1"><UiText>Aliases: </UiText>{person.alias.join(", ")}</p>}
               </div>
             </div>
 
             <div className="flex gap-2.5 flex-wrap self-start md:self-auto">
               {person.financialFlag && (
                 <span className="text-[11px] bg-[var(--color-surface-2)] text-[var(--color-primary)] border border-[var(--color-primary)] px-3 py-1.5 rounded-sm font-semibold flex items-center gap-1.5">
-                  <CreditCard size={13} /> Financial Alert
-                </span>
+                  <CreditCard size={13} /><UiText> Financial Alert
+                </UiText></span>
               )}
               {person.communicationFlag && (
                 <span className="text-[11px] bg-[var(--color-surface-2)] text-[var(--color-alert-high)] border border-[var(--color-alert-high)] px-3 py-1.5 rounded-sm font-semibold flex items-center gap-1.5">
-                  <Radio size={13} /> CDR Anomaly
-                </span>
+                  <Radio size={13} /><UiText> CDR Anomaly
+                </UiText></span>
               )}
             </div>
           </div>
@@ -83,7 +84,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
         <div className="max-w-[1440px] mx-auto px-6 flex gap-1 overflow-x-auto">
           {tabs.map((t) => (
             <button key={t} className={`gov-tab whitespace-nowrap ${activeTab === t ? "is-active" : ""}`} onClick={() => setActiveTab(t)}>
-              {t}
+              <UiText>{t}</UiText>
             </button>
           ))}
         </div>
@@ -95,7 +96,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
             <div className="lg:col-span-2 space-y-6">
               {/* Identity info */}
               <div className="gov-panel p-6">
-                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-4">Identity Intelligence</h3>
+                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-4"><UiText>Identity Intelligence</UiText></h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     ["Full Legal Name", person.name],
@@ -104,8 +105,8 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
                     ["Registered Address", person.address],
                   ].map(([k, v]) => (
                     <div key={k} className="bg-[var(--color-surface-2)] rounded-sm p-3.5 border border-[var(--color-border-subtle)]">
-                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{k}</div>
-                      <div className="text-[13px] font-medium text-[var(--color-text-primary)]">{v}</div>
+                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1"><UiText>{k}</UiText></div>
+                      <div className="text-[13px] font-medium text-[var(--color-text-primary)]"><UiText>{v}</UiText></div>
                     </div>
                   ))}
                 </div>
@@ -116,11 +117,11 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
                 <div className="gov-panel p-6" style={{ borderColor: "var(--color-alert-critical)" }}>
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={16} className="text-[var(--color-alert-critical)]" />
-                    <h3 className="font-bold text-[var(--color-alert-critical)] text-[14px] uppercase tracking-wider">Algorithmic Risk Drivers</h3>
+                    <h3 className="font-bold text-[var(--color-alert-critical)] text-[14px] uppercase tracking-wider"><UiText>Algorithmic Risk Drivers</UiText></h3>
                   </div>
-                  <p className="text-[12px] text-[var(--color-text-muted)] mb-4 italic">
+                  <p className="text-[12px] text-[var(--color-text-muted)] mb-4 italic"><UiText>
                     Automated analytical correlation generated from knowledge graph topology and evidence matching. Requires human investigator verification.
-                  </p>
+                  </UiText></p>
                   <div className="space-y-2.5">
                     {importanceReasons.map((r, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 bg-[var(--color-surface-2)] rounded-sm border border-[var(--color-border-subtle)]">
@@ -134,7 +135,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
 
               {/* Case notes */}
               <div className="gov-panel p-6">
-                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-2">Investigator Field Notes</h3>
+                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-2"><UiText>Investigator Field Notes</UiText></h3>
                 <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{person.notes}</p>
               </div>
             </div>
@@ -143,8 +144,8 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
               {/* Phone numbers */}
               <div className="gov-panel p-5">
                 <h3 className="font-bold text-[var(--color-text-primary)] text-[13px] uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Phone size={14} className="text-[var(--color-primary)]" /> Communications
-                </h3>
+                  <Phone size={14} className="text-[var(--color-primary)]" /><UiText> Communications
+                </UiText></h3>
                 {person.phones.map((ph) => (
                   <div key={ph} className="flex items-center gap-2 py-2 border-b border-[var(--color-border-subtle)] last:border-0">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "var(--entity-phone)" }} />
@@ -157,12 +158,12 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
               {person.vehicles.length > 0 && (
                 <div className="gov-panel p-5">
                   <h3 className="font-bold text-[var(--color-text-primary)] text-[13px] uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Car size={14} className="text-[var(--color-accent)]" /> Associated Vehicles
-                  </h3>
+                    <Car size={14} className="text-[var(--color-accent)]" /><UiText> Associated Vehicles
+                  </UiText></h3>
                   {person.vehicles.map((v) => (
                     <div key={v} className="flex items-center gap-2 py-2 border-b border-[var(--color-border-subtle)] last:border-0">
                       <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "var(--entity-vehicle)" }} />
-                      <span className="text-[13px] font-mono text-[var(--color-text-primary)]">{v}</span>
+                      <span className="text-[13px] font-mono text-[var(--color-text-primary)]"><UiText>{v}</UiText></span>
                     </div>
                   ))}
                 </div>
@@ -171,8 +172,8 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
               {/* Associates */}
               <div className="gov-panel p-5">
                 <h3 className="font-bold text-[var(--color-text-primary)] text-[13px] uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Activity size={14} className="text-[var(--color-primary)]" /> Network Associates
-                </h3>
+                  <Activity size={14} className="text-[var(--color-primary)]" /><UiText> Network Associates
+                </UiText></h3>
                 {person.associates.map((a) => (
                   <button
                     key={a}
@@ -189,8 +190,8 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
               {/* Cases */}
               <div className="gov-panel p-5">
                 <h3 className="font-bold text-[var(--color-text-primary)] text-[13px] uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <FileText size={14} className="text-[var(--color-accent)]" /> Linked Case Dossiers
-                </h3>
+                  <FileText size={14} className="text-[var(--color-accent)]" /><UiText> Linked Case Dossiers
+                </UiText></h3>
                 {person.cases.map((c) => (
                   <button
                     key={c}
@@ -223,8 +224,8 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
                       {ev.confidence}
                     </span>
                   </div>
-                  <h4 className="font-bold text-[13px] text-[var(--color-text-primary)]">{ev.title}</h4>
-                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">{ev.description}</p>
+                  <h4 className="font-bold text-[13px] text-[var(--color-text-primary)]"><UiText>{ev.title}</UiText></h4>
+                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-1 leading-relaxed"><UiText>{ev.description}</UiText></p>
                   {ev.location && (
                     <div className="flex items-center gap-1 text-[10px] text-[var(--color-text-muted)] mt-2">
                       <MapPin size={11} className="text-[var(--color-primary)]" />
@@ -240,19 +241,19 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
         {activeTab === "Financial" && (
           <div className="space-y-4">
             <div className="gov-panel p-6">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-4 uppercase tracking-wider">Financial Pattern Analysis</h3>
+              <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-4 uppercase tracking-wider"><UiText>Financial Pattern Analysis</UiText></h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-4">
                   <div className="text-2xl font-bold text-[var(--color-alert-critical)] stat-number">₹18.4L</div>
-                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider">Highest Anomaly Spike</div>
+                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider"><UiText>Highest Anomaly Spike</UiText></div>
                 </div>
                 <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-4">
                   <div className="text-2xl font-bold text-[var(--color-alert-high)] stat-number">3</div>
-                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider">Flagged Movements</div>
+                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider"><UiText>Flagged Movements</UiText></div>
                 </div>
                 <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-4">
                   <div className="text-2xl font-bold text-[var(--color-primary)] stat-number">ACCT-A2</div>
-                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider">Primary Transit Node</div>
+                  <div className="text-[11px] text-[var(--color-text-muted)] mt-1 uppercase tracking-wider"><UiText>Primary Transit Node</UiText></div>
                 </div>
               </div>
             </div>
@@ -280,7 +281,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
                         ₹{(t.amount / 100000).toFixed(1)}L
                       </div>
                       <div className="text-[10px] uppercase font-bold tracking-wider mt-0.5 text-[var(--color-text-muted)]">
-                        {t.flagged ? "Flagged Flow" : "Audited Clear"}
+                        <UiText>{t.flagged ? "Flagged Flow" : "Audited Clear"}</UiText>
                       </div>
                     </div>
                   </div>
@@ -295,19 +296,19 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
             {personAlerts.length === 0 ? (
               <div className="gov-panel p-12 text-center">
                 <Shield size={32} className="text-[var(--color-text-muted)] mx-auto mb-3" />
-                <p className="text-[var(--color-text-secondary)] text-sm">No unresolved alerts for this entity profile.</p>
+                <p className="text-[var(--color-text-secondary)] text-sm"><UiText>No unresolved alerts for this entity profile.</UiText></p>
               </div>
             ) : (
               personAlerts.map((a) => (
                 <div key={a.id} className="gov-panel gov-accent-top p-6" style={{ borderTopColor: "var(--color-alert-critical)" }}>
                   <div className="flex items-center gap-2 mb-1">
                     <AlertTriangle size={16} className="text-[var(--color-alert-critical)] flex-shrink-0" />
-                    <h3 className="font-bold text-[var(--color-text-primary)] text-base">{a.title}</h3>
+                    <h3 className="font-bold text-[var(--color-text-primary)] text-base"><UiText>{a.title}</UiText></h3>
                   </div>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-3">{a.description}</p>
+                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-3"><UiText>{a.description}</UiText></p>
                   <div className="bg-[var(--color-surface-2)] rounded-sm p-3.5 border border-[var(--color-border-subtle)] text-[12px]">
-                    <span className="text-[var(--color-text-muted)]">Expected baseline: {a.normal} · </span>
-                    <span className="text-[var(--color-alert-critical)] font-bold font-mono">Observed anomaly: {a.observed}</span>
+                    <span className="text-[var(--color-text-muted)]"><UiText>Expected baseline: </UiText>{a.normal} · </span>
+                    <span className="text-[var(--color-alert-critical)] font-bold font-mono"><UiText>Observed anomaly: </UiText>{a.observed}</span>
                   </div>
                 </div>
               ))
@@ -318,7 +319,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
         {(activeTab === "Network" || activeTab === "Communications" || activeTab === "Evidence") && (
           <div className="gov-panel p-16 text-center max-w-xl mx-auto">
             <Activity size={36} className="text-[var(--color-primary)] mx-auto mb-4" />
-            <h3 className="font-bold text-[var(--color-text-primary)] text-lg mb-2">{activeTab} Intelligence View</h3>
+            <h3 className="font-bold text-[var(--color-text-primary)] text-lg mb-2">{activeTab}<UiText> Intelligence View</UiText></h3>
             <p className="text-[13px] text-[var(--color-text-secondary)] mb-6 leading-relaxed">
               {activeTab === "Network"
                 ? "Inspect this entity's direct linkages, transitive paths, and cluster density in the interactive knowledge graph."

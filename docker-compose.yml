@@ -32,8 +32,8 @@ services:
     image: neo4j:5-community
     environment:
       NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-ige_dev_password}
-      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
-    ports: ["7474:7474", "7687:7687"]
+      NEO4J_PLUGINS: '["apoc"]'
+    ports: ["7475:7474", "7688:7687"]
     volumes: ["neo4j_data:/data"]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null || exit 1"]
@@ -47,7 +47,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin123}
-    ports: ["9000:9000", "9001:9001"]
+    ports: ["9005:9000", "9006:9001"]
     volumes: ["minio_data:/data"]
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
@@ -72,7 +72,7 @@ services:
       test:
         - CMD-SHELL
         - >-
-          wget -qO- --post-data='{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' --header='Content-Type: application/json' http://localhost:8545 >/dev/null || exit 1
+          wget -qO- --post-data='{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' --header='Content-Type: application/json' http://127.0.0.1:8545 >/dev/null || exit 1
       interval: 5s
       timeout: 3s
       retries: 30
@@ -128,17 +128,7 @@ services:
     depends_on:
       backend: { condition: service_healthy }
 
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    environment:
-      PORT: 8443
-      VITE_APP_MODE: full
-      VITE_API_URL: http://localhost:8000/api/v1
-    ports: ["8443:8443"]
-    depends_on:
-      backend: { condition: service_healthy }
+
 
 volumes:
   postgres_data:

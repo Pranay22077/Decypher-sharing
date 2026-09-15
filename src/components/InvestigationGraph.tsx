@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { GraphNode, GraphEdge, graphNodes, graphEdges } from "../data/dummy";
 import { entityColor, entityBadge, PALETTE } from "../theme";
 
@@ -118,11 +118,17 @@ export default function InvestigationGraph({
     isPanning.current = false;
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setScale((s) => Math.min(Math.max(s * delta, 0.3), 3));
-  };
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      setScale((s) => Math.min(Math.max(s * delta, 0.3), 3));
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheel);
+  }, []);
 
   const getNodeRadius = (node: GraphNode) => {
     if (node.highlighted) return 22;
@@ -187,7 +193,6 @@ export default function InvestigationGraph({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onMouseDown={handleSvgMouseDown}
-        onWheel={handleWheel}
         style={{ cursor: dragging ? "grabbing" : "grab" }}
       >
         <defs>

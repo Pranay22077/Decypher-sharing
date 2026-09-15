@@ -106,6 +106,7 @@ def seed_demo(db: Session) -> None:
             status="analyzed", registered_by="USR-INV-001", verification_token=f"nightfall-{evidence_id.lower()}",
         )
         db.add(item)
+        db.flush()
         db.add(CustodyEvent(evidence_id=evidence_id, event="COLLECTED", actor_to="Investigator Aditi Rao", location="Delhi NCR", notes="Synthetic demo intake"))
         db.add(CustodyEvent(evidence_id=evidence_id, event="HASHED", actor_to="Decypher", location="Secure intake", notes=f"SHA-256 {digest}"))
     db.flush()

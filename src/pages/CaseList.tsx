@@ -1,3 +1,4 @@
+import UiText, { useUiTranslation } from "../components/UiText";
 import { useState, useEffect } from "react";
 import { Search, Plus, ChevronRight, FolderOpen, Bell, MapPin, Calendar, User, X } from "../components/icons";
 import { cases, Case } from "../data/dummy";
@@ -27,6 +28,7 @@ const summaryTones = [
 ];
 
 export default function CaseList({ onNavigate }: Props) {
+  const trUi = useUiTranslation();
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [showNewCase, setShowNewCase] = useState(false);
@@ -58,12 +60,12 @@ export default function CaseList({ onNavigate }: Props) {
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Case Management</h1>
-            <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">All active investigations · Decypher Intelligence Platform</p>
+            <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]"><UiText>Case Management</UiText></h1>
+            <p className="text-[var(--color-text-secondary)] text-[13px] mt-1"><UiText>All active investigations · Decypher Intelligence Platform</UiText></p>
           </div>
           <button className="btn-premium self-start md:self-auto" onClick={() => setShowNewCase(true)}>
-            <Plus size={16} /> New Case File
-          </button>
+            <Plus size={16} /><UiText> New Case File
+          </UiText></button>
         </div>
       </div>
 
@@ -74,7 +76,7 @@ export default function CaseList({ onNavigate }: Props) {
             <Search size={16} className="text-[var(--color-text-muted)]" />
             <input
               type="text"
-              placeholder="Search by case title, ID, entity..."
+              placeholder={trUi("Search by case title, ID, entity...")}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="flex-1 bg-transparent text-[13px] outline-none text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)]"
@@ -89,7 +91,7 @@ export default function CaseList({ onNavigate }: Props) {
                 aria-pressed={filter === f}
                 onClick={() => setFilter(f)}
               >
-                {f}
+                <UiText>{f}</UiText>
               </button>
             ))}
           </div>
@@ -100,7 +102,7 @@ export default function CaseList({ onNavigate }: Props) {
           {summaryTones.map((s, i) => (
             <div key={i} className="gov-panel p-5 gov-accent-top">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] font-medium text-[var(--color-text-secondary)]">{s.label}</span>
+                <span className="text-[12px] font-medium text-[var(--color-text-secondary)]"><UiText>{s.label}</UiText></span>
                 <span className="w-2 h-2 rounded-full" style={{ background: s.tone }} />
               </div>
               <div className="text-2xl font-bold stat-number" style={{ color: s.tone }}>{s.value}</div>
@@ -123,13 +125,13 @@ export default function CaseList({ onNavigate }: Props) {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={statusStyle(c.status)}>{c.status}</span>
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={priorityStyle(c.priority)}>{c.priority} priority</span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={statusStyle(c.status)}><UiText>{c.status}</UiText></span>
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={priorityStyle(c.priority)}><UiText>{c.priority}</UiText><UiText> priority</UiText></span>
                       <span className="text-[12px] font-mono text-[var(--color-text-muted)]">{c.id}</span>
                     </div>
-                    <h3 className="font-bold text-[var(--color-text-primary)] text-lg group-hover:text-[var(--color-primary)] transition-colors mb-1">{c.title}</h3>
-                    <p className="text-[13px] text-[var(--color-primary)] font-medium mb-2">{c.type}</p>
-                    <p className="text-[13px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed mb-4">{c.description}</p>
+                    <h3 className="font-bold text-[var(--color-text-primary)] text-lg group-hover:text-[var(--color-primary)] transition-colors mb-1"><UiText>{c.title}</UiText></h3>
+                    <p className="text-[13px] text-[var(--color-primary)] font-medium mb-2"><UiText>{c.type}</UiText></p>
+                    <p className="text-[13px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed mb-4"><UiText>{c.description}</UiText></p>
 
                     <div className="flex flex-wrap items-center gap-4 text-[12px] text-[var(--color-text-secondary)]">
                       <div className="flex items-center gap-1.5 bg-[var(--color-surface-2)] px-3 py-1 rounded-sm border border-[var(--color-border-subtle)]">
@@ -151,24 +153,24 @@ export default function CaseList({ onNavigate }: Props) {
                 <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-4 flex-shrink-0 pt-3 md:pt-0 border-t md:border-t-0 border-[var(--color-border-subtle)]">
                   <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-sm p-3 min-w-[90px] text-center">
                     <div className="text-xl font-bold stat-number text-[var(--color-text-primary)]">{c.entities}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5">Entities</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mt-0.5"><UiText>Entities</UiText></div>
                   </div>
                   {c.alerts > 0 && (
                     <div className="flex items-center gap-1.5 border rounded-sm px-2.5 py-1" style={{ color: "var(--color-alert-critical)", borderColor: "var(--color-alert-critical)", background: "var(--color-surface-2)" }}>
                       <Bell size={12} />
-                      <span className="text-[11px] font-bold">{c.alerts} alerts</span>
+                      <span className="text-[11px] font-bold">{c.alerts}<UiText> alerts</UiText></span>
                     </div>
                   )}
                   <div className="text-right">
-                    <div className="text-[10px] text-[var(--color-text-muted)]">Updated</div>
+                    <div className="text-[10px] text-[var(--color-text-muted)]"><UiText>Updated</UiText></div>
                     <div className="text-[11px] text-[var(--color-text-secondary)] font-mono">{c.lastUpdated.split(" ")[0]}</div>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end mt-4 pt-4 border-t border-[var(--color-border-subtle)]">
-                <span className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 group-hover:underline">
-                  Launch Case Workspace <ChevronRight size={14} />
+                <span className="text-[12px] text-[var(--color-primary)] font-semibold flex items-center gap-1 group-hover:underline"><UiText>
+                  Launch Case Workspace </UiText><ChevronRight size={14} />
                 </span>
               </div>
             </div>
@@ -183,14 +185,14 @@ export default function CaseList({ onNavigate }: Props) {
             <button
               onClick={() => setShowNewCase(false)}
               className="absolute top-6 right-6 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
-              aria-label="Close"
+              aria-label={trUi("Close")}
             >
               <X size={18} />
             </button>
             <h2 className="font-bold text-[var(--color-text-primary)] text-lg mb-6 flex items-center gap-2">
-              <Plus size={18} className="text-[var(--color-primary)]" />
+              <Plus size={18} className="text-[var(--color-primary)]" /><UiText>
               Create New Investigation Case
-            </h2>
+            </UiText></h2>
             <div className="space-y-4">
               {createError&&<div className="p-3 border border-[var(--color-alert-critical)] text-sm text-[var(--color-alert-critical)]">{createError}</div>}
               {[
@@ -199,40 +201,40 @@ export default function CaseList({ onNavigate }: Props) {
                 { key:"location", label: "Primary Location", placeholder: "e.g. New Delhi, Mumbai" },
               ].map(f => (
                 <div key={f.label}>
-                  <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">{f.label}</label>
+                  <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5"><UiText>{f.label}</UiText></label>
                   <input
                     type="text"
                     value={newCase[f.key as "title"|"type"|"location"]}
                     onChange={e=>setNewCase(c=>({...c,[f.key]:e.target.value}))}
-                    placeholder={f.placeholder}
+                    placeholder={trUi(f.placeholder)}
                     className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none transition-colors"
                   />
                 </div>
               ))}
               <div>
-                <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">Priority</label>
+                <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5"><UiText>Priority</UiText></label>
                 <select value={newCase.priority} onChange={e=>setNewCase(c=>({...c,priority:e.target.value}))} className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] outline-none transition-colors">
-                  <option value="high" className="bg-[var(--color-surface)]">High Priority</option>
-                  <option value="medium" className="bg-[var(--color-surface)]">Medium Priority</option>
-                  <option value="low" className="bg-[var(--color-surface)]">Low Priority</option>
+                  <option value="high" className="bg-[var(--color-surface)]"><UiText>High Priority</UiText></option>
+                  <option value="medium" className="bg-[var(--color-surface)]"><UiText>Medium Priority</UiText></option>
+                  <option value="low" className="bg-[var(--color-surface)]"><UiText>Low Priority</UiText></option>
                 </select>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">Description</label>
+                <label className="block text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5"><UiText>Description</UiText></label>
                 <textarea
                   rows={3}
                   value={newCase.description}
                   onChange={e=>setNewCase(c=>({...c,description:e.target.value}))}
-                  placeholder="Summary of investigation intelligence and objectives..."
+                  placeholder={trUi("Summary of investigation intelligence and objectives...")}
                   className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] focus:border-[var(--color-primary)] rounded-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none resize-none transition-colors"
                 />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button className="btn-premium flex-1" disabled={creating} onClick={createCase}>
-                {creating?"Creating…":"Initialize Case"}
+                <UiText>{creating?"Creating…":"Initialize Case"}</UiText>
               </button>
-              <button className="btn-premium-outline" onClick={() => setShowNewCase(false)}>Cancel</button>
+              <button className="btn-premium-outline" onClick={() => setShowNewCase(false)}><UiText>Cancel</UiText></button>
             </div>
           </div>
         </div>

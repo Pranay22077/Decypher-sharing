@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Filter, ChevronRight, MapPin, FileText, Phone, TrendingUp, Users, AlertTriangle, Eye, Shield } from "../components/icons";
@@ -56,12 +57,12 @@ export default function TimelinePage({ onNavigate }: Props) {
         <div className="max-w-[1440px] mx-auto flex flex-wrap gap-3 items-center">
           <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">
             <Filter size={14} className="text-[var(--color-primary)]" />
-            <span>Event:</span>
+            <span><UiText>Event:</UiText></span>
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             {["all", "call", "transaction", "meeting", "sighting", "report"].map((t) => (
               <button key={t} className={`gov-chip capitalize ${filterType === t ? "is-active" : ""}`} aria-pressed={filterType === t} onClick={() => setFilterType(t)}>
-                {t}
+                <UiText>{t}</UiText>
               </button>
             ))}
           </div>
@@ -69,7 +70,7 @@ export default function TimelinePage({ onNavigate }: Props) {
           <span className="text-[var(--color-border-strong)] hidden md:inline">|</span>
 
           <div className="flex items-center gap-1.5 text-[11px] text-[var(--color-text-muted)] font-semibold uppercase tracking-wider">
-            <span>Confidence:</span>
+            <span><UiText>Confidence:</UiText></span>
           </div>
           <div className="flex gap-1.5">
             {["all", "confirmed", "probable", "unverified"].map((c) => (
@@ -117,18 +118,18 @@ export default function TimelinePage({ onNavigate }: Props) {
                             className="text-[10px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-wider flex items-center gap-1.5"
                             style={{ color: cfg.color, borderColor: cfg.color, background: "var(--color-surface-2)" }}
                           >
-                            {cfg.icon} {ev.type}
+                            {cfg.icon} <UiText>{ev.type}</UiText>
                           </span>
                           <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-widest" style={confStyle(ev.confidence)}>
                             {ev.confidence}
                           </span>
                         </div>
 
-                        <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] group-hover:text-[var(--color-primary)] transition-colors">{ev.title}</h3>
+                        <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] group-hover:text-[var(--color-primary)] transition-colors"><UiText>{ev.title}</UiText></h3>
 
                         {isExpanded && (
                           <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)] space-y-3">
-                            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{ev.description}</p>
+                            <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>{ev.description}</UiText></p>
 
                             {ev.location && (
                               <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-muted)]">
@@ -138,7 +139,7 @@ export default function TimelinePage({ onNavigate }: Props) {
                             )}
 
                             <div className="flex flex-wrap items-center gap-2 mt-2">
-                              <span className="text-[11px] text-[var(--color-text-muted)]">Involved entities:</span>
+                              <span className="text-[11px] text-[var(--color-text-muted)]"><UiText>Involved entities:</UiText></span>
                               {ev.entities.map((e) => (
                                 <span key={e} className="text-[10px] bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] px-2 py-0.5 rounded-sm font-mono font-semibold">
                                   {e}
@@ -147,8 +148,8 @@ export default function TimelinePage({ onNavigate }: Props) {
                             </div>
 
                             <div className="flex items-center justify-between pt-2 text-[11px] text-[var(--color-text-muted)]">
-                              <span>
-                                Source feed: <strong className="text-[var(--color-text-secondary)]">{ev.source}</strong>
+                              <span><UiText>
+                                Source feed: </UiText><strong className="text-[var(--color-text-secondary)]"><UiText>{ev.source}</UiText></strong>
                               </span>
                               <div className="flex gap-4">
                                 <button
@@ -158,8 +159,8 @@ export default function TimelinePage({ onNavigate }: Props) {
                                     const cited = ev.source.match(/EV-2026-\d+/)?.[0];
                                     onNavigate(cited ? "evidence-detail" : "evidence",cited);
                                   }}
-                                >
-                                  Examine evidence <ChevronRight size={11} />
+                                ><UiText>
+                                  Examine evidence </UiText><ChevronRight size={11} />
                                 </button>
                                 <button
                                   className="text-[var(--color-accent)] font-semibold hover:underline flex items-center gap-1"
@@ -167,8 +168,8 @@ export default function TimelinePage({ onNavigate }: Props) {
                                     e.stopPropagation();
                                     onNavigate("graph");
                                   }}
-                                >
-                                  Trace in graph <ChevronRight size={11} />
+                                ><UiText>
+                                  Trace in graph </UiText><ChevronRight size={11} />
                                 </button>
                               </div>
                             </div>

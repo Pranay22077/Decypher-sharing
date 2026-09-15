@@ -1,3 +1,4 @@
+import UiText from "../components/UiText";
 import { useEffect, useState } from "react";
 import {
   ChevronRight, AlertTriangle, Users, Upload, FileText, Activity,
@@ -53,7 +54,6 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [showUploadFlow, setShowUploadFlow] = useState(false);
   const [uploadStep, setUploadStep] = useState(0);
-  const [showPersonProfile, setShowPersonProfile] = useState<string | null>(null);
   const [remoteCase, setRemoteCase] = useState<Case | null>(null);
 
   useEffect(()=>{if(appMode!=="full")return;api.getCase(caseId).then(c=>setRemoteCase({id:c.id,title:c.title,type:"Investigation",status:c.status,priority:c.priority==="critical"?"high":c.priority,date:c.created_at.slice(0,10),location:"Delhi NCR",description:c.description,assignedTo:c.lead_investigator,entities:c.counts?.entities||0,alerts:c.counts?.alerts||0,lastUpdated:c.updated_at})).catch(()=>setRemoteCase(null));},[caseId]);
@@ -88,7 +88,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto">
           <div className="flex items-center gap-2 text-[11px] text-[var(--color-text-muted)] mb-3">
-            <button className="hover:text-[var(--color-text-primary)] transition-colors" onClick={() => onNavigate("cases")}>Cases</button>
+            <button className="hover:text-[var(--color-text-primary)] transition-colors" onClick={() => onNavigate("cases")}><UiText>Cases</UiText></button>
             <ChevronRight size={12} />
             <span className="text-[var(--color-primary)] font-mono">{currentCase.id}</span>
           </div>
@@ -96,19 +96,19 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
             <div>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={priorityStyle(currentCase.priority)}>
-                  {currentCase.priority} Priority
-                </span>
+                  <UiText>{currentCase.priority}</UiText><UiText> Priority
+                </UiText></span>
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={successStyle}>
-                  {currentCase.status}
+                  <UiText>{currentCase.status}</UiText>
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">{currentCase.title}</h1>
-              <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">{currentCase.id} · {currentCase.type} · {currentCase.location}</p>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]"><UiText>{currentCase.title}</UiText></h1>
+              <p className="text-[var(--color-text-secondary)] text-[13px] mt-1">{currentCase.id} · <UiText>{currentCase.type}</UiText> · {currentCase.location}</p>
             </div>
             <div className="flex gap-3 flex-shrink-0 self-start md:self-auto">
               <button className="btn-premium" onClick={() => setActiveTab("upload")}>
-                <Upload size={14} /> Ingest Evidence
-              </button>
+                <Upload size={14} /><UiText> Ingest Evidence
+              </UiText></button>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
               className={`gov-tab flex items-center gap-2 whitespace-nowrap ${activeTab === t.id ? "is-active" : ""}`}
               onClick={() => { if (t.route) onNavigate(t.route); else setActiveTab(t.id); if (t.id === "upload") setShowUploadFlow(false); }}
             >
-              {t.icon}{t.label}
+              {t.icon}<UiText>{t.label}</UiText>
             </button>
           ))}
         </div>
@@ -150,7 +150,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
           <div>
             {/* Type filters */}
             <div className="flex items-center gap-2 mb-4 flex-wrap">
-              <span className="text-[12px] text-[var(--color-text-muted)] font-medium">Filter Nodes:</span>
+              <span className="text-[12px] text-[var(--color-text-muted)] font-medium"><UiText>Filter Nodes:</UiText></span>
               {["All", "person", "org", "phone", "vehicle", "location", "account", "case", "event"].map(t => {
                 const active = (t === "All" && !selectedFilter) || selectedFilter === t;
                 return (
@@ -160,7 +160,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     aria-pressed={active}
                     onClick={() => setSelectedFilter(t === "All" ? null : t)}
                   >
-                    {t}
+                    <UiText>{t}</UiText>
                   </button>
                 );
               })}
@@ -168,37 +168,37 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
 
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <div className="gov-panel p-2">
+                <div className="glass-card p-3 border border-[var(--color-border-subtle)]">
                   <InvestigationGraph
                     filterType={selectedFilter}
                     height={580}
                     onNodeClick={n => {
-                      if (n.type === "person") setShowPersonProfile(n.id);
+                      if (n.type === "person") onNavigate("person", n.id);
                     }}
                   />
                 </div>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-2.5 text-center">
+                <p className="text-[11px] text-[var(--color-text-muted)] mt-2.5 text-center"><UiText>
                   Click a node to focus · Drag to reposition · Scroll to zoom · Click Person node to launch 360° profile
-                </p>
+                </UiText></p>
               </div>
 
               <div className="space-y-4">
                 {/* Graph info */}
-                <div className="gov-panel p-5">
-                  <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] uppercase tracking-wider mb-4">Network Composition</h3>
+                <div className="glass-card p-5 border border-[var(--color-border-subtle)]">
+                  <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] uppercase tracking-wider mb-4"><UiText>Network Composition</UiText></h3>
                   <div className="space-y-2.5">
                     {composition.map(s => (
                       <div key={s.label} className="flex items-center justify-between text-[12px]">
                         <div className="flex items-center gap-2">
                           <div className="w-2.5 h-2.5 rounded-sm" style={{ background: s.color }} />
-                          <span className="text-[var(--color-text-secondary)]">{s.label}</span>
+                          <span className="text-[var(--color-text-secondary)]"><UiText>{s.label}</UiText></span>
                         </div>
                         <span className="font-semibold text-[var(--color-text-primary)]">{s.value}</span>
                       </div>
                     ))}
                     <div className="border-t border-[var(--color-border-subtle)] pt-3 mt-3">
                       <div className="flex items-center justify-between text-[12px]">
-                        <span className="text-[var(--color-text-muted)]">Total Relationships</span>
+                        <span className="text-[var(--color-text-muted)]"><UiText>Total Relationships</UiText></span>
                         <span className="font-bold text-[var(--color-primary)]">{graphEdges.length}</span>
                       </div>
                     </div>
@@ -206,10 +206,10 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                 </div>
 
                 {/* Key Roles */}
-                <div className="gov-panel p-5" style={{ borderColor: "var(--color-alert-critical)" }}>
+                <div className="glass-card p-5 border" style={{ borderColor: "var(--color-alert-critical)" }}>
                   <div className="flex items-center gap-2 mb-3">
                     <AlertTriangle size={15} className="text-[var(--color-alert-critical)]" />
-                    <h3 className="font-bold text-[var(--color-alert-critical)] text-[13px] uppercase tracking-wider">Detected Roles</h3>
+                    <h3 className="font-bold text-[var(--color-alert-critical)] text-[13px] uppercase tracking-wider"><UiText>Detected Roles</UiText></h3>
                   </div>
                   {[
                     { id: "PERSON-P001", role: "Primary Entity, degree centrality 7", color: "text-[var(--color-alert-critical)]" },
@@ -219,7 +219,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     <button
                       key={r.id}
                       className="w-full text-left p-2.5 rounded-sm bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border-strong)] transition-colors mb-2 group"
-                      onClick={() => setShowPersonProfile(r.id)}
+                      onClick={() => onNavigate("person", r.id)}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[12px] font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">{r.id}</span>
@@ -231,13 +231,13 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                 </div>
 
                 {/* Copilot hint */}
-                <div className="gov-panel p-4 flex items-center gap-3">
+                <div className="glass-card p-4 flex items-center gap-3 border border-[var(--color-border-subtle)]">
                   <div className="w-11 h-11 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
                     <Brain size={18} />
                   </div>
                   <div className="flex-1">
-                    <div className="text-[12px] font-semibold text-[var(--color-text-primary)]">AI Copilot Ready</div>
-                    <div className="text-[11px] text-[var(--color-text-muted)]">Click floating assistant in bottom-right</div>
+                    <div className="text-[12px] font-semibold text-[var(--color-text-primary)]"><UiText>AI Copilot Ready</UiText></div>
+                    <div className="text-[11px] text-[var(--color-text-muted)]"><UiText>Click floating assistant in bottom-right</UiText></div>
                   </div>
                 </div>
               </div>
@@ -250,8 +250,8 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               <div className="gov-panel p-6">
-                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-3">Case Brief</h3>
-                <p className="text-[14px] text-[var(--color-text-secondary)] leading-relaxed">{currentCase.description}</p>
+                <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-3"><UiText>Case Brief</UiText></h3>
+                <p className="text-[14px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>{currentCase.description}</UiText></p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 text-[12px]">
                   {[
                     ["Case ID", currentCase.id],
@@ -264,8 +264,8 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     ["Last Updated", currentCase.lastUpdated],
                   ].map(([k, v]) => (
                     <div key={k} className="bg-[var(--color-surface-2)] rounded-sm p-3 border border-[var(--color-border-subtle)]">
-                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{k}</div>
-                      <div className="font-semibold text-[var(--color-text-primary)]">{v}</div>
+                      <div className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-widest mb-1"><UiText>{k}</UiText></div>
+                      <div className="font-semibold text-[var(--color-text-primary)]"><UiText>{v}</UiText></div>
                     </div>
                   ))}
                 </div>
@@ -273,8 +273,8 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
 
               <div className="gov-panel p-6">
                 <h3 className="font-bold text-[var(--color-text-primary)] text-[15px] uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Activity size={16} className="text-[var(--color-primary)]" /> Investigation Progress & Changes
-                </h3>
+                  <Activity size={16} className="text-[var(--color-primary)]" /><UiText> Investigation Progress & Changes
+                </UiText></h3>
                 <div className="space-y-3">
                   {[
                     "Critical alert generated: Communication burst detected on PERSON-P001 (60 calls/day)",
@@ -293,14 +293,14 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] uppercase tracking-wider">High-Priority Alerts</h3>
+              <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] uppercase tracking-wider"><UiText>High-Priority Alerts</UiText></h3>
               {caseAlerts.slice(0, 3).map(a => (
                 <div key={a.id} className="gov-panel p-4">
                   <div className="flex items-start gap-3">
                     <AlertTriangle size={16} className={a.severity === "critical" ? "text-[var(--color-alert-critical)] mt-0.5" : "text-[var(--color-alert-high)] mt-0.5"} />
                     <div>
-                      <div className="text-[12px] font-bold text-[var(--color-text-primary)]">{a.title}</div>
-                      <div className="text-[11px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">{a.description}</div>
+                      <div className="text-[12px] font-bold text-[var(--color-text-primary)]"><UiText>{a.title}</UiText></div>
+                      <div className="text-[11px] text-[var(--color-text-secondary)] mt-1 leading-relaxed"><UiText>{a.description}</UiText></div>
                     </div>
                   </div>
                 </div>
@@ -325,19 +325,19 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     <div className="flex gap-2 mt-2">
                       {p.financialFlag && (
                         <span className="text-[10px] bg-[var(--color-surface-2)] text-[var(--color-primary)] border border-[var(--color-primary)] px-2 py-0.5 rounded-sm flex items-center gap-1 font-semibold">
-                          <CreditCard size={10} /> Fin. Flag
-                        </span>
+                          <CreditCard size={10} /><UiText> Fin. Flag
+                        </UiText></span>
                       )}
                       {p.communicationFlag && (
                         <span className="text-[10px] bg-[var(--color-surface-2)] text-[var(--color-alert-high)] border border-[var(--color-alert-high)] px-2 py-0.5 rounded-sm flex items-center gap-1 font-semibold">
-                          <Radio size={10} /> CDR Alert
-                        </span>
+                          <Radio size={10} /><UiText> CDR Alert
+                        </UiText></span>
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-[11px]">
-                  <span className="text-[var(--color-text-muted)]">{p.associates.length} associates · {p.cases.length} cases</span>
+                  <span className="text-[var(--color-text-muted)]">{p.associates.length}<UiText> associates · </UiText>{p.cases.length}<UiText> cases</UiText></span>
                   <span className="text-[var(--color-primary)] font-semibold group-hover:underline flex items-center gap-1">
                     360° Profile <ChevronRight size={12} />
                   </span>
@@ -358,11 +358,11 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="font-bold text-[var(--color-text-primary)] text-[14px]">{ev.title}</h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-widest" style={successStyle}>{ev.status}</span>
+                      <h3 className="font-bold text-[var(--color-text-primary)] text-[14px]"><UiText>{ev.title}</UiText></h3>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm border uppercase tracking-widest" style={successStyle}><UiText>{ev.status}</UiText></span>
                       <span className="text-[11px] font-mono text-[var(--color-text-muted)]">{ev.id}</span>
                     </div>
-                    <p className="text-[12px] text-[var(--color-text-secondary)]">{ev.source} · {ev.date} · {ev.size}</p>
+                    <p className="text-[12px] text-[var(--color-text-secondary)]"><UiText>{ev.source}</UiText> · {ev.date} · {ev.size}</p>
                     <p className="text-[11px] font-mono text-[var(--color-text-muted)] mt-1">{ev.hash}</p>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {ev.entities.map(e => (
@@ -372,8 +372,8 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 text-[11px] text-[var(--color-text-muted)]">
-                  <div>Chain of Custody:</div>
-                  <div className="font-semibold text-[var(--color-text-primary)] mt-0.5">{ev.uploadedBy}</div>
+                  <div><UiText>Chain of Custody:</UiText></div>
+                  <div className="font-semibold text-[var(--color-text-primary)] mt-0.5"><UiText>{ev.uploadedBy}</UiText></div>
                 </div>
               </div>
             ))}
@@ -389,33 +389,33 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-sm border uppercase tracking-widest" style={criticalStyle}>{a.severity}</span>
-                      <span className="text-[11px] bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] px-2.5 py-0.5 rounded-sm font-mono">{a.type}</span>
+                      <span className="text-[11px] bg-[var(--color-surface-2)] border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] px-2.5 py-0.5 rounded-sm font-mono"><UiText>{a.type}</UiText></span>
                       <span className="text-[11px] text-[var(--color-text-muted)]">{a.timestamp}</span>
                     </div>
-                    <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-1">{a.title}</h3>
-                    <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{a.description}</p>
+                    <h3 className="font-bold text-[var(--color-text-primary)] text-base mb-1"><UiText>{a.title}</UiText></h3>
+                    <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed"><UiText>{a.description}</UiText></p>
 
                     <div className="mt-4 bg-[var(--color-surface-2)] rounded-sm p-4 border border-[var(--color-border-subtle)]">
-                      <div className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5">Anomaly Baseline Analysis</div>
+                      <div className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-1.5"><UiText>Anomaly Baseline Analysis</UiText></div>
                       <p className="text-[12px] text-[var(--color-text-primary)] mb-3">{a.reason}</p>
                       <div className="flex gap-6 text-[12px]">
                         <div>
-                          <span className="text-[var(--color-text-muted)]">Standard Baseline: </span>
+                          <span className="text-[var(--color-text-muted)]"><UiText>Standard Baseline: </UiText></span>
                           <span className="text-[var(--color-text-primary)] font-mono ml-1">{a.normal}</span>
                         </div>
                         <div>
-                          <span className="text-[var(--color-text-muted)]">Observed Spike: </span>
+                          <span className="text-[var(--color-text-muted)]"><UiText>Observed Spike: </UiText></span>
                           <span className="text-[var(--color-alert-critical)] font-bold font-mono ml-1">{a.observed}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex gap-4 mt-4 text-[12px]">
-                      <button className="text-[var(--color-primary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("graph")}>
-                        View in Master Graph <ChevronRight size={12} />
+                      <button className="text-[var(--color-primary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("graph")}><UiText>
+                        View in Master Graph </UiText><ChevronRight size={12} />
                       </button>
-                      <button className="text-[var(--color-text-secondary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("evidence")}>
-                        Examine Linked Evidence <ChevronRight size={12} />
+                      <button className="text-[var(--color-text-secondary)] font-semibold flex items-center gap-1 hover:underline" onClick={() => onNavigate("evidence")}><UiText>
+                        Examine Linked Evidence </UiText><ChevronRight size={12} />
                       </button>
                     </div>
                   </div>
@@ -429,20 +429,20 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
         {activeTab === "upload" && (
           <div className="max-w-[760px] mx-auto">
             <div className="gov-panel p-8">
-              <h2 className="font-bold text-[var(--color-text-primary)] text-xl mb-1">Ingest Evidence & Telemetry</h2>
-              <p className="text-[13px] text-[var(--color-text-secondary)] mb-6">Upload FIRs, CDR records, financial statements, CCTV logs, or surveillance reports.</p>
+              <h2 className="font-bold text-[var(--color-text-primary)] text-xl mb-1"><UiText>Ingest Evidence & Telemetry</UiText></h2>
+              <p className="text-[13px] text-[var(--color-text-secondary)] mb-6"><UiText>Upload FIRs, CDR records, financial statements, CCTV logs, or surveillance reports.</UiText></p>
 
               {!showUploadFlow ? (
                 <>
                   <div className="border-2 border-dashed border-[var(--color-border-strong)] hover:border-[var(--color-primary)] rounded-sm p-12 text-center transition-colors cursor-pointer group bg-[var(--color-surface-2)]" onClick={handleUpload}>
                     <Upload size={36} className="text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] mx-auto mb-3 transition-colors" />
-                    <p className="font-semibold text-[var(--color-text-primary)] text-base">Select file or drag and drop to ingest</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1.5">Supported: PDF, CSV, MP4, MP3, JPG, JSON (Max 500 MB)</p>
+                    <p className="font-semibold text-[var(--color-text-primary)] text-base"><UiText>Select file or drag and drop to ingest</UiText></p>
+                    <p className="text-[12px] text-[var(--color-text-muted)] mt-1.5"><UiText>Supported: PDF, CSV, MP4, MP3, JPG, JSON (Max 500 MB)</UiText></p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
                     {["FIR / Charge Sheet", "CDR / IPDR Logs", "Bank Statements", "CCTV Video Footage", "Wiretap Audio", "Intelligence Memo"].map(t => (
                       <button key={t} className="border border-[var(--color-border-subtle)] rounded-sm bg-[var(--color-surface-2)] p-3.5 text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:border-[var(--color-primary)] transition-colors text-left flex items-center gap-2" onClick={handleUpload}>
-                        <Plus size={13} className="flex-shrink-0" /> {t}
+                        <Plus size={13} className="flex-shrink-0" /> <UiText>{t}</UiText>
                       </button>
                     ))}
                   </div>
@@ -450,7 +450,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
               ) : (
                 <div className="space-y-4">
                   <div className="text-center mb-6">
-                    <div className="text-[15px] font-bold text-[var(--color-text-primary)]">Processing Evidence Stream...</div>
+                    <div className="text-[15px] font-bold text-[var(--color-text-primary)]"><UiText>Processing Evidence Stream...</UiText></div>
                     <div className="text-[12px] font-mono text-[var(--color-primary)] mt-1">FIR-2026-DL-INTELLIGENCE.pdf</div>
                   </div>
                   {uploadSteps.map((step, i) => (
@@ -464,24 +464,24 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                           <div className="w-4 h-4 border-2 border-[var(--color-border-strong)] rounded-full" />
                         )}
                       </div>
-                      <span className={`text-[13px] ${i <= uploadStep ? "text-[var(--color-text-primary)] font-medium" : "text-[var(--color-text-muted)]"}`}>{step}</span>
+                      <span className={`text-[13px] ${i <= uploadStep ? "text-[var(--color-text-primary)] font-medium" : "text-[var(--color-text-muted)]"}`}><UiText>{step}</UiText></span>
                     </div>
                   ))}
 
                   {uploadStep === uploadSteps.length - 1 && (
                     <div className="mt-6 p-5 bg-[var(--color-surface-2)] border border-[var(--color-success)] rounded-sm">
                       <h3 className="font-bold text-[var(--color-success)] text-[14px] mb-2 flex items-center gap-2">
-                        <CheckCircle size={16} /> Knowledge Graph Updated Successfully
-                      </h3>
-                      <p className="text-[12px] text-[var(--color-text-secondary)] mb-3">6 entities and 8 relationships resolved from document:</p>
+                        <CheckCircle size={16} /><UiText> Knowledge Graph Updated Successfully
+                      </UiText></h3>
+                      <p className="text-[12px] text-[var(--color-text-secondary)] mb-3"><UiText>6 entities and 8 relationships resolved from document:</UiText></p>
                       <div className="flex flex-wrap gap-2">
                         {["PERSON-P001", "LOCATION-01", "PHONE-9810XXXX", "ORG-042", "2026-01-14", "EVENT-001"].map(e => (
                           <span key={e} className="text-[11px] bg-[var(--color-surface)] border border-[var(--color-border-strong)] text-[var(--color-text-primary)] px-2.5 py-1 rounded-sm font-mono">{e}</span>
                         ))}
                       </div>
-                      <button className="btn-premium btn-sm mt-4" onClick={() => setActiveTab("graph")}>
+                      <button className="btn-premium btn-sm mt-4" onClick={() => setActiveTab("graph")}><UiText>
                         Inspect in Master Graph
-                      </button>
+                      </UiText></button>
                     </div>
                   )}
                 </div>
@@ -490,25 +490,6 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
           </div>
         )}
       </div>
-
-      {/* Person quick profile modal */}
-      {showPersonProfile && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(11,24,45,0.55)" }}>
-          <div className="gov-panel bg-[var(--color-surface)] border border-[var(--color-border-strong)] w-full max-w-[480px] p-6 relative">
-            <button className="absolute top-5 right-5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" onClick={() => setShowPersonProfile(null)} aria-label="Close">
-              <X size={18} />
-            </button>
-            <h3 className="font-bold text-[var(--color-text-primary)] text-lg mb-2">{showPersonProfile}</h3>
-            <p className="text-[13px] text-[var(--color-text-secondary)] mb-6">Explore comprehensive timeline, communication logs, financial records, and associates.</p>
-            <div className="flex gap-3">
-              <button className="btn-premium flex-1" onClick={() => { setShowPersonProfile(null); onNavigate("person", showPersonProfile); }}>
-                Open 360° Profile
-              </button>
-              <button className="btn-premium-outline" onClick={() => setShowPersonProfile(null)}>Dismiss</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

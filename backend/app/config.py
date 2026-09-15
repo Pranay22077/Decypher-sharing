@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     aws_s3_bucket: str = "criminal-intel-evidence"
     aws_sqs_queue_url: str = ""
     openai_api_key: str = ""
+    groq_api_key: str = ""
     max_upload_bytes: int = 104_857_600
 
 

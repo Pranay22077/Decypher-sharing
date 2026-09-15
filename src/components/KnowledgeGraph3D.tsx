@@ -95,11 +95,12 @@ export default function KnowledgeGraph3D({ nodes, edges, height = 620, selectedI
     const h = height;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(PALETTE.surface);
+    scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(60, w / h, 1, 5000);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setClearColor(0x000000, 0);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
     glHost.appendChild(renderer.domElement);
