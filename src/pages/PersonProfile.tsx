@@ -34,7 +34,7 @@ export default function PersonProfile({ personId, onNavigate }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-[var(--color-base-bg)] text-[var(--color-text-primary)]">
+    <div className="min-h-full bg-[var(--color-base-bg)] text-[var(--color-text-primary)]">
       {/* Header */}
       <div className="bg-[var(--color-surface)] border-b border-[var(--color-border-subtle)] px-6 py-6">
         <div className="max-w-[1440px] mx-auto">

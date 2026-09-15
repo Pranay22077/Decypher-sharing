@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Menu, X } from "./icons";
+import { Shield, Menu, X, Sun, Moon } from "./icons";
 import StateEmblem from "./StateEmblem";
 import { useLocale } from "../context/LocaleContext";
 
@@ -52,6 +52,7 @@ function UtilityBar() {
     return v != null ? Number(v) : 1;
   });
   const [contrast, setContrast] = useState<boolean>(() => localStorage.getItem("ui.contrast") === "1");
+  const [theme, setTheme] = useState<"dark" | "light">(() => (localStorage.getItem("ui.theme") as "dark" | "light") || "dark");
 
   useEffect(() => {
     const scale = TEXT_LEVELS[level]?.scale ?? 1;
@@ -63,6 +64,11 @@ function UtilityBar() {
     document.documentElement.classList.toggle("hc", contrast);
     localStorage.setItem("ui.contrast", contrast ? "1" : "0");
   }, [contrast]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", theme === "light");
+    localStorage.setItem("ui.theme", theme);
+  }, [theme]);
 
   const govName = lang === "hi" ? "डिसाइफ़र बाय एपॉक" : "Decypher by Epoch";
   const ministry = lang === "hi" ? "काल्पनिक जाँच प्रदर्शन" : "Fictional investigation prototype";
@@ -103,6 +109,15 @@ function UtilityBar() {
               </button>
             ))}
           </div>
+
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme((t) => t === "dark" ? "light" : "dark")}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="px-2 py-1 rounded-sm border border-[var(--color-border-strong)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)] transition-colors"
+          >
+            {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
 
           {/* High contrast */}
           <button

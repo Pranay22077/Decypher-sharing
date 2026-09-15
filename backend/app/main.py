@@ -28,7 +28,7 @@ from .services import (
 app = FastAPI(title=settings.app_name, version="2.0.0", description="Evidence-first investigation prototype API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_url, "http://localhost:5173", "http://localhost:8443"],
+    allow_origins=[settings.frontend_url, "http://localhost:5173", "http://localhost:8443", "http://127.0.0.1:8443"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -176,6 +176,12 @@ def upload_evidence(case_id: str = Form(...), description: str = Form(""), file:
     kind = "video" if mime.startswith("video/") else "audio" if mime.startswith("audio/") else "image" if mime.startswith("image/") else "data" if "csv" in mime else "document"
     evidence = Evidence(id=evidence_id, case_id=case_id, name=filename, description=description, type=kind, object_key=key, mime_type=mime, size=len(payload), sha256=digest, status="hashed", registered_by=user.id, verification_token=new_verification_token())
     db.add(evidence); db.add(CustodyEvent(evidence_id=evidence_id, event="COLLECTED", actor_to=user.name, location="Secure intake portal", notes="Evidence uploaded")); db.add(CustodyEvent(evidence_id=evidence_id, event="HASHED", actor_to="Decypher", notes=f"SHA-256 {digest}")); audit(db, user.id, "EVIDENCE_UPLOADED", evidence_id, {"caseId":case_id,"sha256":digest}); db.commit(); db.refresh(evidence)
+    
+    # Enqueue AI Extraction & Blockchain Registration
+    db.add(ProcessingJob(id=f"JOB-AI-{evidence_id}", kind="analysis", target_id=evidence_id))
+    db.add(ProcessingJob(id=f"JOB-BC-{evidence_id}", kind="blockchain", target_id=evidence_id))
+    db.commit()
+    
     return evidence
 
 
@@ -303,6 +309,27 @@ def network(case_id:str,user:User=Depends(current_user),db:Session=Depends(get_d
 @app.get("/api/v1/cases/{case_id}/related")
 def related(case_id:str,user:User=Depends(current_user),db:Session=Depends(get_db)):
     return {"caseId":case_id,"relatedCases":[{"id":"CASE-X007","title":"Operation Northbridge","sharedEntities":["PERSON-P004","VEHICLE-V001"],"evidenceIds":["EV-2026-0007"]}]}
+
+
+@app.get("/api/v1/search")
+def global_search(q: str, case_id: str | None = None, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    results = []
+    
+    entity_query = select(Entity).where(Entity.canonical_name.ilike(f"%{q}%"))
+    for ent in db.scalars(entity_query):
+        results.append({"type": "entity", "id": ent.id, "title": ent.canonical_name, "subtitle": ent.type})
+        
+    evidence_query = select(Evidence).where(Evidence.name.ilike(f"%{q}%"))
+    if case_id: evidence_query = evidence_query.where(Evidence.case_id == case_id)
+    for ev in db.scalars(evidence_query):
+        results.append({"type": "evidence", "id": ev.id, "title": ev.name, "subtitle": ev.type})
+        
+    event_query = select(TimelineEvent).where(TimelineEvent.title.ilike(f"%{q}%"))
+    if case_id: event_query = event_query.where(TimelineEvent.case_id == case_id)
+    for ev in db.scalars(event_query):
+        results.append({"type": "event", "id": ev.id, "title": ev.title, "subtitle": ev.type})
+        
+    return results[:20]
 
 
 @app.post("/api/v1/copilot/query")

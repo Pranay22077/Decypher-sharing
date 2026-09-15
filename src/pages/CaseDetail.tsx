@@ -53,7 +53,6 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
   const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const [showUploadFlow, setShowUploadFlow] = useState(false);
   const [uploadStep, setUploadStep] = useState(0);
-  const [showPersonProfile, setShowPersonProfile] = useState<string | null>(null);
   const [remoteCase, setRemoteCase] = useState<Case | null>(null);
 
   useEffect(()=>{if(appMode!=="full")return;api.getCase(caseId).then(c=>setRemoteCase({id:c.id,title:c.title,type:"Investigation",status:c.status,priority:c.priority==="critical"?"high":c.priority,date:c.created_at.slice(0,10),location:"Delhi NCR",description:c.description,assignedTo:c.lead_investigator,entities:c.counts?.entities||0,alerts:c.counts?.alerts||0,lastUpdated:c.updated_at})).catch(()=>setRemoteCase(null));},[caseId]);
@@ -168,12 +167,12 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
 
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <div className="gov-panel p-2">
+                <div className="glass-card p-3 border border-[var(--color-border-subtle)]">
                   <InvestigationGraph
                     filterType={selectedFilter}
                     height={580}
                     onNodeClick={n => {
-                      if (n.type === "person") setShowPersonProfile(n.id);
+                      if (n.type === "person") onNavigate("person", n.id);
                     }}
                   />
                 </div>
@@ -184,7 +183,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
 
               <div className="space-y-4">
                 {/* Graph info */}
-                <div className="gov-panel p-5">
+                <div className="glass-card p-5 border border-[var(--color-border-subtle)]">
                   <h3 className="font-bold text-[var(--color-text-primary)] text-[14px] uppercase tracking-wider mb-4">Network Composition</h3>
                   <div className="space-y-2.5">
                     {composition.map(s => (
@@ -206,7 +205,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                 </div>
 
                 {/* Key Roles */}
-                <div className="gov-panel p-5" style={{ borderColor: "var(--color-alert-critical)" }}>
+                <div className="glass-card p-5 border" style={{ borderColor: "var(--color-alert-critical)" }}>
                   <div className="flex items-center gap-2 mb-3">
                     <AlertTriangle size={15} className="text-[var(--color-alert-critical)]" />
                     <h3 className="font-bold text-[var(--color-alert-critical)] text-[13px] uppercase tracking-wider">Detected Roles</h3>
@@ -219,7 +218,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                     <button
                       key={r.id}
                       className="w-full text-left p-2.5 rounded-sm bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-hover)] border border-[var(--color-border-subtle)] hover:border-[var(--color-border-strong)] transition-colors mb-2 group"
-                      onClick={() => setShowPersonProfile(r.id)}
+                      onClick={() => onNavigate("person", r.id)}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[12px] font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">{r.id}</span>
@@ -231,7 +230,7 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
                 </div>
 
                 {/* Copilot hint */}
-                <div className="gov-panel p-4 flex items-center gap-3">
+                <div className="glass-card p-4 flex items-center gap-3 border border-[var(--color-border-subtle)]">
                   <div className="w-11 h-11 rounded-sm bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] text-[var(--color-primary)] flex items-center justify-center flex-shrink-0">
                     <Brain size={18} />
                   </div>
@@ -490,25 +489,6 @@ export default function CaseDetail({ caseId, onNavigate }: Props) {
           </div>
         )}
       </div>
-
-      {/* Person quick profile modal */}
-      {showPersonProfile && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ background: "rgba(11,24,45,0.55)" }}>
-          <div className="gov-panel bg-[var(--color-surface)] border border-[var(--color-border-strong)] w-full max-w-[480px] p-6 relative">
-            <button className="absolute top-5 right-5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" onClick={() => setShowPersonProfile(null)} aria-label="Close">
-              <X size={18} />
-            </button>
-            <h3 className="font-bold text-[var(--color-text-primary)] text-lg mb-2">{showPersonProfile}</h3>
-            <p className="text-[13px] text-[var(--color-text-secondary)] mb-6">Explore comprehensive timeline, communication logs, financial records, and associates.</p>
-            <div className="flex gap-3">
-              <button className="btn-premium flex-1" onClick={() => { setShowPersonProfile(null); onNavigate("person", showPersonProfile); }}>
-                Open 360° Profile
-              </button>
-              <button className="btn-premium-outline" onClick={() => setShowPersonProfile(null)}>Dismiss</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
